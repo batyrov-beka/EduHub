@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+
+:root {
+    --primary-color: #0073b1;
+    --primary-hover: #005582;
+    --bg-color: #0f1419;
+    --card-bg: #ffffff;
+    --text-main: white;
+    --text-muted: #a0aec0;
+    --border-color: #2d3748;
+    --input-focus: #3b82f6;
+}
+
+
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus,
+.auth-card textarea:-webkit-autofill,
+.auth-card select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 50, 80, 0.6) inset;
+    -webkit-text-fill-color: #e0e7ff;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: white;
+
+    background: linear-gradient(
+        -45deg,
+        #0f1419,
+        #1a3a52,
+        #0f1419,
+        #1a2b4a
+    );
+    background-size: 400% 400%;
+    animation: gradient 8s ease infinite;
+    min-height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 25%;
+    }
+    25% {
+        background-position: 25% 50%;
+    }
+    50% {
+        background-position: 50% 75%;
+    }
+    75% {
+        background-position: 75% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    padding: 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: rgba(131, 168, 211, 0.12);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: white;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}
+
+.auth-card h2 {
+    font-size: 28px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.auth-card p.subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+
+.auth-card input,
+.auth-card select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: rgba(30, 50, 80, 0.6);
+    color: #e0e7ff;
+    transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.auth-card input::placeholder {
+    color: rgba(224, 231, 255, 0.6);
+}
+
+.auth-card input:focus,
+.auth-card select:focus {
+    border-color: var(--input-focus);
+    background: rgba(30, 50, 80, 0.8);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+}
+
+.auth-card select option {
+    background: #1a2b4a;
+    color: white;
+}
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.eye-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+    z-index: 5;
+}
+
+.eye-toggle:hover {
+    color: var(--text-main);
+}
+
+.eye-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-register {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-register:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 115, 177, 0.3);
+}
+
+.btn-register:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration:none;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: block;
+    line-height: 1.4;
+}
+
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+    .auth-container {
+        padding: 0;
+    }
+}
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Регистрация </h2>
+        <p class="subtitle">Создайте аккаунт, чтобы начать обучение в EduHub</p>
+
+        <form method="post" id="registerForm" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">
+                        {% if field.name == "username" %}Имя пользователя
+                        {% elif field.name == "email" %}Электронная почта
+                        {% elif field.name == "password1" %}Придумайте пароль
+                        {% elif field.name == "password2" %}Повторите пароль
+                        {% elif field.name == "role" %}Выберите вашу роль
+                        {% else %}{{ field.label }}
+                        {% endif %}
+                    </label>
+
+                    <div class="{% if 'password' in field.name %}password-wrapper{% endif %}">
+
+
+                        {% if field.name == "role" %}
+                            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="auth-input">
+                                {% for value, text in field.field.choices %}
+                                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ text }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+
+                        {% if "password" in field.name %}
+                            <button type="button" class="eye-toggle toggle-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    {% if field.help_text %}
+                        <span class="help-text">{{ field.help_text|safe }}</span>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <span style="color: #e11d48; font-size: 12px; margin-top: 4px; display: block;">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-register">Создать аккаунт</button>
+        </form>
+
+        <div class="auth-footer">
+            Уже есть аккаунт? <a href="{% url 'login' %}">Войти здесь</a>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    const eyePath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+    const eyeSlashPath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 1.247 0 2.41.226 3.487.638M19.88 19.88L3 3m16.88 16.88l-3.69-3.69m3.69 3.69l3.12 3.12M18.165 11.705A10.039 10.039 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M17.657 5.343A10.062 10.062 0 0112 5c-4.478 0-8.268 2.943-9.542 7-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M9.88 9.88l.458.458m4.342 4.342l.458.458m-4.342-4.342a3 3 0 114.243 4.243m-4.242-4.242L3 3" />`;
+
+    document.querySelectorAll('.toggle-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const svg = this.querySelector('svg');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                svg.innerHTML = eyeSlashPath;
+            } else {
+                input.type = 'password';
+                svg.innerHTML = eyePath;
+            }
+        });
+    });
+</script>
+{% endblock %}

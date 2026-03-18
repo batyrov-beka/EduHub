@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduHub | Платформа возможностей</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+body{
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    min-height:100vh;
+}
+
+.navbar{
+    width:100%;
+    padding:18px 60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    background:rgba(15,23,42,0.9);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    z-index:1000;
+}
+
+.logo{
+    font-size:26px;
+    font-weight:900; letter-spacing:-1px; cursor:pointer; text-decoration: none; color: white;}
+.logo span{
+    color:#38bdf8; }
+
+.nav-links{
+    display:flex;
+    gap:35px;
+    align-items:center;
+}
+.nav-links a{
+    text-decoration:none;
+    color:rgba(255,255,255,0.7);
+    font-weight:500; font-size:15px;
+    position:relative;
+    transition:.3s;
+}
+.nav-links a:hover, .nav-links a.active{
+    color:white;
+}
+
+.user-area{ display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.btn{
+    padding:10px 22px;
+    border-radius:12px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    border:none;
+    text-decoration:none;
+    display:inline-block;
+    transition:.3s; text-align: center;
+}
+.btn-login{
+    background:#0073b1; color:white;
+}
+.btn-post{
+    background:linear-gradient(135deg,#10b981,#059669);
+    color:white;
+}
+.btn-logout{
+    background:rgba(239,68,68,0.15);
+    color:#ef4444; border:1px solid rgba(239,68,68,0.25);
+}
+
+
+.mobile-nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    z-index: 1100;
+}
+.mobile-nav-toggle span {
+    width: 30px;
+    height: 3px;
+    background: white;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+
+.nav-overlay {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    height: 100vh;
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    padding: 100px 40px;
+    gap: 25px;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+.nav-overlay.active { left: 0; }
+
+.nav-overlay a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 600;
+}
+.user-badge{
+    color: white;
+}
+
+
+@media (max-width: 900px) {
+      .navbar {
+        flex-direction: row-reverse;
+    }
+    .navbar { padding: 16px 20px; }
+    .nav-links, .user-area { display: none; }
+    .mobile-nav-toggle { display: flex; }
+
+
+    .mobile-user-info {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+
+.container{ width:1200px; max-width:95%; margin:auto; padding-top:40px; }
+.alert{ padding:16px; border-radius:12px; margin-bottom:20px; background:#1e293b; border-left:4px solid #38bdf8; }
+
+
+{#.mobile-nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }#}
+{#.mobile-nav-toggle.open span:nth-child(2) { opacity: 0; }#}
+{#.mobile-nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }#}
+
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+    <a href="/" class="logo">EduHub<span>.</span></a>
+
+    <div class="nav-links">
+        <a href="{% url 'home' %}">Главная</a>
+        <a href="{% url 'job_list' %}">Вакансии</a>
+        <a href="#">Материалы</a>
+        <a href="#">Форум</a>
+    </div>
+
+    <div class="user-area">
+        {% if user.is_authenticated %}
+            {% if user.role == 'employer' %}
+                <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать</a>
+            {% endif %}
+            <div class="user-badge">👤 {{ user.username }}</div>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-logout">Выйти</button>
+            </form>
+        {% else %}
+            <a class="btn btn-login" href="{% url 'login' %}">Вход</a>
+            <a class="btn btn-post" href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+
+    <div class="mobile-nav-toggle" id="mobile-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</nav>
+
+<div class="nav-overlay" id="mobile-menu">
+    <a href="{% url 'home' %}">Главная</a>
+    <a href="{% url 'job_list' %}">Вакансии</a>
+    <a href="#">Материалы</a>
+    <a href="#">Форум</a>
+
+    <div class="mobile-user-info">
+        {% if user.is_authenticated %}
+            <div style="font-size: 14px; color: #38bdf8;">👤 {{ user.username }}</div>
+            {% if user.role == 'employer' %}
+                <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать вакансию</a>
+            {% endif %}
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button class="btn btn-logout" style="width: 100%;">Выйти</button>
+            </form>
+        {% else %}
+            <a class="btn btn-login" href="{% url 'login' %}">Вход</a>
+            <a class="btn btn-post" href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script>
+    const toggle = document.getElementById('mobile-toggle');
+    const menu = document.getElementById('mobile-menu');
+
+    toggle.addEventListener('click', () => {
+        toggle.classList.toggle('open');
+        menu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && !toggle.contains(e.target)) {
+            menu.classList.remove('active');
+            toggle.classList.remove('open');
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+
+:root {
+    --primary-color: #0073b1;
+    --primary-hover: #005582;
+    --bg-color: #0f1419;
+    --card-bg: rgba(131, 168, 211, 0.12);
+    --text-main: white;
+    --text-muted: #a0aec0;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --input-focus: #3b82f6;
+}
+
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus,
+.auth-card textarea:-webkit-autofill,
+.auth-card select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 50, 80, 0.6) inset;
+    -webkit-text-fill-color: #e0e7ff;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: white;
+
+    background: linear-gradient(
+        -45deg,
+        #0f1419,
+        #1a3a52,
+        #0f1419,
+        #1a2b4a
+    );
+    background-size: 400% 400%;
+    animation: gradient 8s ease infinite;
+    min-height: 100vh;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 25%;
+    }
+    25% {
+        background-position: 25% 50%;
+    }
+    50% {
+        background-position: 50% 75%;
+    }
+    75% {
+        background-position: 75% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 85vh;
+    padding: 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card-bg);
+    backdrop-filter: blur(15px);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+}
+
+.auth-card h2 {
+    font-size: 28px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.auth-card p.subtitle {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 32px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.custom-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background-color: rgba(30, 50, 80, 0.6);
+    color: #e0e7ff;
+    transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.custom-input::placeholder {
+    color: rgba(224, 231, 255, 0.6);
+}
+
+.custom-input:focus {
+    border-color: var(--input-focus);
+    background-color: rgba(30, 50, 80, 0.8);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+}
+
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.eye-toggle {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    z-index: 5;
+    transition: color 0.2s;
+}
+
+.eye-toggle:hover {
+    color: var(--text-main);
+}
+
+.eye-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.forgot-link-container {
+    text-align: right;
+    margin-top: -12px;
+    margin-bottom: 24px;
+}
+
+.forgot-link {
+    font-size: 13px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+    color: #60a5fa;
+}
+
+
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 115, 177, 0.2);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.auth-footer a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    text-decoration: none;
+    color: #60a5fa;
+}
+ .forgot-link-container a:hover{
+    text-decoration: none;
+
+}
+
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        background: rgba(131, 168, 211, 0.08);
+    }
+}
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Вход</h2>
+        <p class="subtitle">Добро пожаловать обратно в EduHub</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" name="username" class="custom-input" placeholder="Введите логин" required>
+            </div>
+
+            <div class="form-group">
+                <label>Пароль</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" id="id_password" class="custom-input" placeholder="Введите пароль" required>
+                    <button type="button" id="togglePassword" class="eye-toggle">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="forgot-link-container">
+                <a href="{% url 'custom_reset_form' %}" class="forgot-link">Забыли пароль?</a>
+            </div>
+
+            <button type="submit" class="btn-login">Войти в аккаунт</button>
+        </form>
+
+        <div class="auth-footer">
+            Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const passwordField = document.querySelector('#id_password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    const eyePath = `<path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />`;
+    const eyeSlashPath = `<path d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />`;
+
+    togglePassword.addEventListener('click', function () {
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        eyeIcon.innerHTML = type === 'password' ? eyePath : eyeSlashPath;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+:root {
+    --primary-color: #0073b1;
+    --primary-hover: #005582;
+    --bg-color: #0f1419;
+    --card-bg: rgba(131, 168, 211, 0.08);
+    --text-main: #ffffff;
+    --text-muted: #a0aec0;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --accent-color: #3b82f6;
+}
+
+
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--text-main);
+    background: linear-gradient(-45deg, #0f1419, #1a3a52, #0f1419, #1a2b4a);
+    background-size: 400% 400%;
+    animation: gradient 8s ease infinite;
+    min-height: 100vh;
+    margin: 0;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% 25%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 25%; }
+}
+
+
+.page-header {
+    margin: 40px 0;
+    text-align: center;
+}
+
+.page-header h2 {
+    font-weight: 800;
+    font-size: 42px;
+    color: var(--text-main);
+    letter-spacing: -1px;
+}
+
+.page-header p {
+    color: var(--text-muted);
+    font-size: 18px;
+}
+
+
+.jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.job-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 30px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.job-card:hover {
+    transform: translateY(-10px);
+    background: rgba(131, 168, 211, 0.15);
+    border-color: var(--accent-color);
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+}
+
+.job-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 12px;
+}
+
+
+.company-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.company-logo-plug {
+    width: 50px;
+    height: 50px;
+    background: rgba(30, 50, 80, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-size: 22px;
+}
+
+.company-name {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 16px;
+}
+
+.job-location {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+
+.meta-tags {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tag {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.tag-salary {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.job-desc {
+    font-size: 15px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+
+.job-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.posted-date {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.btn-details {
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-details:hover {
+    background-color: var(--primary-hover);
+    box-shadow: 0 5px 15px rgba(0, 115, 177, 0.4);
+    transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+    .jobs-grid { grid-template-columns: 1fr; }
+    .job-card { margin: 10px; }
+}
+</style>
+
+<div class="container">
+    <div class="page-header">
+        <h2>Актуальные предложения</h2>
+        <p>Найдите работу или стажировку, которая изменит вашу жизнь</p>
+    </div>
+
+    <div class="jobs-grid">
+        {% for job in jobs %}
+        <div class="job-card">
+            <div>
+                <div class="company-wrapper">
+                    <div class="company-logo-plug">
+                        {% if job.company_logo %}
+                            <img src="{{ job.company_logo.url }}" alt="logo" style="width:100%; border-radius:12px;">
+                        {% else %}
+                            {{ job.company|slice:":1" }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="company-name">{{ job.company }}</div>
+                        <div class="job-location">📍 {{ job.location }}</div>
+                    </div>
+                </div>
+
+                <div class="job-title">{{ job.title }}</div>
+
+                <div class="meta-tags">
+                    <span class="tag tag-type">{{ job.job_type }}</span>
+                    <span class="tag tag-salary">
+                        {% if job.salary %}💰 {{ job.salary }}{% else %}Договорная{% endif %}
+                    </span>
+                </div>
+
+                <div class="job-desc">
+                    {{ job.description|truncatewords:15 }}
+                </div>
+            </div>
+
+            <div class="job-footer">
+                <div class="posted-date">🕒 {{ job.created_at|timesince }} назад</div>
+                <a href="#" class="btn-details">Открыть</a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
+            <h3 style="color: #94a3b8;">Пока здесь пусто... Но скоро появятся новые вакансии!</h3>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
