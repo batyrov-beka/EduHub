@@ -6,11 +6,12 @@ class JobForm(forms.ModelForm):
     class Meta:
         model = Job
 
-        fields = ['title', 'company', 'location', 'description', 'job_type', 'salary']
+        fields = ['title','phone', 'company', 'location', 'description', 'job_type', 'salary']
 
 
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control',}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', }),
             'company': forms.TextInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),

@@ -1,0 +1,32 @@
+{% for job in jobs %}
+<div class="job-card">
+    <div>
+        <div class="company-wrapper">
+            <div class="company-logo-plug">
+                {% if job.company_logo %}
+                    <img src="{{ job.company_logo.url }}" alt="logo" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
+                {% else %}
+                    {{ job.company|slice:":1" }}
+                {% endif %}
+            </div>
+            <div>
+                <div style="font-weight: 700;">{{ job.company }}</div>
+                <div style="font-size: 13px; color: var(--text-muted);">📍 {{ job.location }}</div>
+            </div>
+        </div>
+        <div class="job-title">{{ job.title }}</div>
+        <div class="big_phone">📞 {{ job.phone }}</div>
+        <div class="meta-tags">
+            <span class="tag">{{ job.job_type }}</span>
+            <span class="tag tag-salary">💰 {{ job.salary|default:"Договорная" }}</span>
+        </div>
+        <div class="job-desc">{{ job.description|truncatewords:15 }}</div>
+    </div>
+    <div class="job-footer">
+        <div style="font-size: 12px; color: var(--text-muted);">🕒 {{ job.created_at|timesince }} назад</div>
+        <a href="{% url 'vacancy_detail' job.id %}" class="btn-details" style="background: var(--accent-color); color: white; padding: 10px 24px; border-radius: 12px; text-decoration: none; font-weight: 700;">Открыть</a>
+    </div>
+</div>
+{% empty %}
+<div style="grid-column: 1/-1; text-align: center; padding: 60px 0;">Ничего не найдено</div>
+{% endfor %}

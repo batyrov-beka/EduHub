@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    body { background-color: #030712; color: #f8fafc; font-family: 'Inter', sans-serif; }
+
+    .resume-wrapper {
+        max-width: 950px;
+        margin: 40px auto;
+        background: #1e293b;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        color: #f1f5f9;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .resume-top {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 50px;
+        border-bottom: 4px solid #38bdf8;
+    }
+
+    .resume-header-flex {
+        display: flex;
+        align-items: center;
+        gap: 35px;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #38bdf8;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
+    .no-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        color: #94a3b8;
+        border: 4px solid #475569;
+    }
+
+    .resume-name {
+        font-size: 38px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        color: #ffffff;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        color: #94a3b8;
+    }
+
+    .contact-item i { color: #38bdf8; margin-right: 10px; }
+
+    .resume-body { padding: 50px; display: grid; grid-template-columns: 1fr; gap: 35px; }
+
+    .info-header {
+        font-size: 14px;
+        font-weight: 800;
+        color: #38bdf8;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        display: flex; align-items: center; gap: 10px;
+    }
+
+    .info-header::after { content: ""; flex: 1; height: 1px; background: rgba(56, 189, 248, 0.2); }
+
+    .info-content { font-size: 17px; line-height: 1.8; color: #cbd5e1; white-space: pre-line; }
+
+    .control-panel { text-align: center; margin-bottom: 30px; margin-top: 30px; }
+
+    .btn-custom {
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.3s;
+        display: inline-block;
+        margin: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-edit { background: #38bdf8; color: #0f172a; }
+    .btn-back { color: white; }
+
+    @media (max-width: 768px) {
+        .resume-header-flex { flex-direction: column; text-align: center; }
+        .contact-grid { justify-items: center; }
+        .resume-name { font-size: 28px; }
+    }
+
+    @media print {
+        .navbar, .footer, .control-panel, .btn-back { display: none !important; }
+        .resume-wrapper { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; }
+    }
+</style>
+
+<div class="container py-5">
+
+<div class="control-panel">
+
+
+        {% if user == resume.user %}
+        <a href="{% url 'edit_resume' %}" class="btn-custom btn-edit">
+            <i class="fas fa-edit me-2"></i> РЕДАКТИРОВАТЬ
+        </a>
+        {% endif %}
+
+        <button onclick="window.print()" class="btn-custom btn-pdf">
+            <i class="fas fa-print me-2"></i> ПЕЧАТЬ / PDF
+        </button>
+
+
+    </div>
+
+    <div class="resume-wrapper">
+        <div class="resume-top">
+            <div class="resume-header-flex">
+                {% if resume.photo %}
+                    <img src="{{ resume.photo.url }}" alt="Profile" class="profile-avatar">
+                {% else %}
+                    <div class="no-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+
+                <div style="flex-grow: 1;">
+                    <h1 class="resume-name">{{ resume.full_name }}</h1>
+                    <div class="contact-grid">
+                        <div class="contact-item"><i class="fas fa-envelope"></i> {{ resume.user.email }}</div>
+                        <div class="contact-item"><i class="fas fa-phone"></i> {{ resume.phone }}</div>
+                        {% if resume.github_link %}
+                        <div class="contact-item"><i class="fab fa-github"></i> <a href="{{ resume.github_link }}" style="color: inherit; text-decoration: none;">GitHub Портфолио</a></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="resume-body">
+            <div class="info-section">
+                <div class="info-header"><i class="fas fa-graduation-cap"></i> Образование</div>
+                <div class="info-content">{{ resume.education|linebreaks }}</div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-header"><i class="fas fa-briefcase"></i> Опыт работы</div>
+                <div class="info-content">{{ resume.experience|linebreaks }}</div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-header"><i class="fas fa-tools"></i> Навыки (Skills)</div>
+                <div class="info-content">{{ resume.skills|linebreaks }}</div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-header"><i class="fas fa-user"></i> О себе</div>
+                <div class="info-content">{{ resume.about_me|linebreaks }}</div>
+            </div>
+        </div>
+    <a href="javascript:history.back()" class="btn-custom btn-back" style="margin-left: 800px;margin-bottom: 20px">⬅️ Назад</a>
+    </div>
+
+</div>
+{% endblock %}

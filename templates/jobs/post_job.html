@@ -201,6 +201,7 @@ body {
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">
                         {% if field.name == "title" %}Название должности
+                        {% elif field.name == "phone" %}Ватсап номер
                         {% elif field.name == "description" %}Описание работы
                         {% elif field.name == "salary" %}Уровень зарплаты
                         {% elif field.name == "location" %}Локация (Город)

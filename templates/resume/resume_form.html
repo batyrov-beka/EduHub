@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-blue: #38bdf8;
+        --bg-dark: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.7);
+    }
+
+    .glass-form {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 50px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .form-title {
+        font-size: 32px;
+        font-weight: 800;
+        background: linear-gradient(to right, #38bdf8, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .input-group { margin-bottom: 25px; }
+
+    .input-group label {
+        display: block;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+
+    input[type="text"], input[type="url"], input[type="file"], textarea {
+        width: 100%;
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 14px !important;
+        padding: 12px 15px !important;
+        color: #fff !important;
+        font-size: 15px !important;
+        transition: all 0.3s ease;
+    }
+
+    input:focus, textarea:focus {
+        border-color: var(--primary-blue) !important;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15) !important;
+        outline: none !important;
+    }
+
+    input[type="file"] {
+        padding: 10px !important;
+        font-size: 13px !important;
+        cursor: pointer;
+    }
+
+    .submit-btn {
+        background: #38bdf8;
+        color: #0f172a;
+        padding: 18px;
+        border-radius: 16px;
+        border: none;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 20px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .submit-btn:hover {
+        background: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(56, 189, 248, 0.3);
+    }
+
+    .helper-text {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 6px;
+        display: block;
+    }
+
+input[type="file"] {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+    color: #94a3b8 !important;
+    padding: 10px !important;
+}
+
+input[type="file"]::file-selector-button {
+    background: #38bdf8;
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 15px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: #ffffff;
+}
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+            <div class="glass-form">
+                <div class="text-center">
+                    <h2 class="form-title">Редактирование Резюме</h2>
+                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px;display: flex;
+        justify-content: center;">Обновите ваше фото и личные данные</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 input-group">
+                            <label>Ваше ФИО</label>
+                            {{ form.full_name }}
+                        </div>
+
+                        <div class="col-md-6 input-group">
+                            <label>Контактный телефон</label>
+                            {{ form.phone }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 input-group">
+                            <label><i class="fas fa-camera me-2"></i>Фото профиля</label>
+                            {{ form.photo }}
+                            <span class="helper-text">Выберите новое фото, чтобы заменить текущее. Рекомендуется квадратное фото (PNG/JPG).</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Ссылка на GitHub / Портфолио</label>
+                        {{ form.github_link }}
+                    </div>
+
+                    <div class="input-group">
+                        <label>Образование</label>
+                        {{ form.education }}
+                    </div>
+
+                    <div class="input-group">
+                        <label>Опыт работы</label>
+                        {{ form.experience }}
+                    </div>
+
+                    <div class="input-group">
+                        <label>Технические навыки (Skills)</label>
+                        {{ form.skills }}
+                    </div>
+
+                    <div class="input-group">
+                        <label>О себе</label>
+                        {{ form.about_me }}
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="margin-bottom:20px ">
+                        Сохранить и обновить
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'view_resume' %}" style="color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; margin-left: 500px;padding-top: 50px ">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -73,7 +73,17 @@ body{
     transition:.3s; text-align: center;
 }
 .btn-login{
-    background:#0073b1; color:white;
+    {# background: rgba(56, 189, 248, 0.1); #}
+    {#border: 1px solid rgba(56, 189, 248, 0.3);#}
+    border-radius: 10px;
+    color: white;;
+    transition: all 0.3s ease;
+    background: #3b82f6;
+}
+.btn-login:hover{
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+    transform: translateY(-2px);
+
 }
 .btn-post{
     background:linear-gradient(135deg,#10b981,#059669);
@@ -148,14 +158,90 @@ body{
         gap: 15px;
     }
 }
+ .messages-container {
+        position: fixed;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 1200px;
+        z-index: 9999;
+    }
 
-.container{ width:1200px; max-width:95%; margin:auto; padding-top:40px; }
-.alert{ padding:16px; border-radius:12px; margin-bottom:20px; background:#1e293b; border-left:4px solid #38bdf8; }
+.container {
+    width: 1200px;
+    max-width: 95%;
+    margin: auto;
+    padding-top: 20px;
+}
 
 
-{#.mobile-nav-toggle.open span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }#}
-{#.mobile-nav-toggle.open span:nth-child(2) { opacity: 0; }#}
-{#.mobile-nav-toggle.open span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }#}
+.alert {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    background: #1e293b;
+    border-left: 4px solid #38bdf8;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+
+@media (max-width: 768px) {
+    .messages-container {
+        position: fixed;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        z-index: 9999;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        font-size: 14px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+}
+
+
+.custom-app-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px !important;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 10px;
+    color: #38bdf8 !important;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    margin-right: 10px;
+    text-decoration: none;
+}
+.nav-item {
+    list-style: none !important;
+}
+
+
+.custom-app-btn:hover {
+    {#background: #38bdf8;#}
+    {#color: #ffffff !important;#}
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+    transform: translateY(-2px);
+}
+
+
+.custom-app-btn .icon {
+    font-size: 1.1rem;
+}
+
+@media (max-width: 991px) {
+    .custom-app-btn {
+        margin-top: 10px;
+        justify-content: center;
+    }
+}
 
 </style>
 </head>
@@ -167,26 +253,52 @@ body{
 
     <div class="nav-links">
         <a href="{% url 'home' %}">Главная</a>
-        <a href="{% url 'job_list' %}">Вакансии</a>
+      <a href="{% url 'vacancy_list' %}">Вакансии</a>
         <a href="#">Материалы</a>
         <a href="#">Форум</a>
     </div>
 
-    <div class="user-area">
-        {% if user.is_authenticated %}
-            {% if user.role == 'employer' %}
-                <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать</a>
-            {% endif %}
-            <div class="user-badge">👤 {{ user.username }}</div>
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button class="btn btn-logout">Выйти</button>
-            </form>
-        {% else %}
-            <a class="btn btn-login" href="{% url 'login' %}">Вход</a>
-            <a class="btn btn-post" href="{% url 'register' %}">Регистрация</a>
-        {% endif %}
-    </div>
+   <div class="user-area">
+   {% if user.is_authenticated and user.role == 'employer' %}
+    <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-info me-2" style="color: white">
+        📥 Запросы
+    </a>
+{% endif %}
+
+  {% if user.is_authenticated and user.role == 'student' %}
+    <li class="nav-item">
+        <a class="nav-link custom-app-btn" href="{% url 'student_applications' %}">
+            <span class="icon">📂</span>
+            <span class="text">Мои уведомления</span>
+        </a>
+    </li>
+{% endif %}
+
+
+
+{% if user.is_authenticated %}
+    {% if user.role == 'student' %}
+        <a class="btn btn-login" href="{% url 'view_resume' %}">📝 Мое резюме</a>
+    {% endif %}
+
+    {% if user.role == 'employer' %}
+        <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать</a>
+    {% endif %}
+
+      <a href="{% url 'profile' %}" style="text-decoration: none; color: white; margin-left: 15px;">
+           👤 {{ user.username }}
+        </a>
+
+{#        <div class="user-badge">👤 {{ user.username }}</div>#}
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button class="btn btn-logout">Выйти</button>
+        </form>
+    {% else %}
+        <a class="btn btn-login" href="{% url 'login' %}">Вход</a>
+        <a class="btn btn-post" href="{% url 'register' %}">Регистрация</a>
+    {% endif %}
+</div>
 
     <div class="mobile-nav-toggle" id="mobile-toggle">
         <span></span>
@@ -201,29 +313,53 @@ body{
     <a href="#">Материалы</a>
     <a href="#">Форум</a>
 
-    <div class="mobile-user-info">
-        {% if user.is_authenticated %}
-            <div style="font-size: 14px; color: #38bdf8;">👤 {{ user.username }}</div>
-            {% if user.role == 'employer' %}
-                <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать вакансию</a>
-            {% endif %}
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button class="btn btn-logout" style="width: 100%;">Выйти</button>
-            </form>
-        {% else %}
-            <a class="btn btn-login" href="{% url 'login' %}">Вход</a>
-            <a class="btn btn-post" href="{% url 'register' %}">Регистрация</a>
+   <div class="mobile-user-info">
+   {% if user.is_authenticated and user.role == 'employer' %}
+    <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-info me-2">
+        📥 Запросы
+    </a>
+{% endif %}
+
+  {% if user.is_authenticated and user.role == 'student' %}
+    <li class="nav-item">
+        <a class="nav-link custom-app-btn" href="{% url 'student_applications' %}">
+            <span class="icon">📂</span>
+            <span class="text">Мои уведомления</span>
+        </a>
+    </li>
+{% endif %}
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" style="font-size: 14px; color: #38bdf8;">👤 {{ user.username }}</a>
+
+        {% if user.role == 'student' %}
+            <a class="btn btn-login" style="" href="{% url 'view_resume' %}">
+Мое резюме</a>
         {% endif %}
-    </div>
+
+        {% if user.role == 'employer' %}
+            <a class="btn btn-post" href="{% url 'post_job' %}">+ Опубликовать вакансию</a>
+        {% endif %}
+
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-logout" style="width: 100%;">Выйти</button>
+        </form>
+    {% else %}
+        {% endif %}
+</div>
 </div>
 
 <div class="container">
+ <div class="messages-container">
     {% if messages %}
         {% for message in messages %}
-            <div class="alert">{{ message }}</div>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+            </div>
         {% endfor %}
     {% endif %}
+</div>
 
     {% block content %}
     {% endblock %}
@@ -244,6 +380,16 @@ body{
             toggle.classList.remove('open');
         }
     });
+
+
+    setTimeout(function() {
+        let messages = document.querySelectorAll('.alert, .messages');
+        messages.forEach(function(msg) {
+            msg.style.transition = "opacity 0.5s ease";
+            msg.style.opacity = "0";
+            setTimeout(() => msg.remove(), 500);
+        });
+    }, 4000);
 </script>
 
 </body>
