@@ -187,11 +187,12 @@ body {
 }
 </style>
 
+{% load i18n %}
 <div class="container-custom">
     <div class="form-card">
         <div class="form-header">
-            <h2>Опубликовать вакансию 💼</h2>
-            <p>Заполните детали, чтобы найти подходящего специалиста</p>
+            <h2>{% trans "Опубликовать вакансию" %} 💼</h2>
+            <p>{% trans "Заполните детали, чтобы найти подходящего специалиста" %}</p>
         </div>
 
         <form method="POST" novalidate>
@@ -200,12 +201,12 @@ body {
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">
-                        {% if field.name == "title" %}Название должности
-                        {% elif field.name == "phone" %}Ватсап номер
-                        {% elif field.name == "description" %}Описание работы
-                        {% elif field.name == "salary" %}Уровень зарплаты
-                        {% elif field.name == "location" %}Локация (Город)
-                        {% elif field.name == "category" %}Категория
+                        {% if field.name == "title" %}{% trans "Название должности" %}
+                        {% elif field.name == "phone" %}{% trans "Ватсап номер" %}
+                        {% elif field.name == "description" %}{% trans "Описание работы" %}
+                        {% elif field.name == "salary" %}{% trans "Уровень зарплаты" %}
+                        {% elif field.name == "location" %}{% trans "Локация (Город)" %}
+                        {% elif field.name == "category" %}{% trans "Категория" %}
                         {% else %}{{ field.label }}
                         {% endif %}
                     </label>
@@ -223,7 +224,7 @@ body {
             {% endfor %}
 
             <button type="submit" class="btn-publish">
-                Опубликовать объявление
+                {% trans "Опубликовать объявление" %}
             </button>
         </form>
     </div>

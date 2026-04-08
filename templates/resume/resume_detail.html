@@ -112,22 +112,18 @@
     }
 </style>
 
+{% load i18n %}
 <div class="container py-5">
-
-<div class="control-panel">
-
-
+    <div class="control-panel">
         {% if user == resume.user %}
         <a href="{% url 'edit_resume' %}" class="btn-custom btn-edit">
-            <i class="fas fa-edit me-2"></i> РЕДАКТИРОВАТЬ
+            <i class="fas fa-edit me-2"></i> {% trans "РЕДАКТИРОВАТЬ" %}
         </a>
         {% endif %}
 
         <button onclick="window.print()" class="btn-custom btn-pdf">
-            <i class="fas fa-print me-2"></i> ПЕЧАТЬ / PDF
+            <i class="fas fa-print me-2"></i> {% trans "ПЕЧАТЬ / PDF" %}
         </button>
-
-
     </div>
 
     <div class="resume-wrapper">
@@ -147,7 +143,7 @@
                         <div class="contact-item"><i class="fas fa-envelope"></i> {{ resume.user.email }}</div>
                         <div class="contact-item"><i class="fas fa-phone"></i> {{ resume.phone }}</div>
                         {% if resume.github_link %}
-                        <div class="contact-item"><i class="fab fa-github"></i> <a href="{{ resume.github_link }}" style="color: inherit; text-decoration: none;">GitHub Портфолио</a></div>
+                        <div class="contact-item"><i class="fab fa-github"></i> <a href="{{ resume.github_link }}" style="color: inherit; text-decoration: none;">{% trans "GitHub Портфолио" %}</a></div>
                         {% endif %}
                     </div>
                 </div>
@@ -156,27 +152,26 @@
 
         <div class="resume-body">
             <div class="info-section">
-                <div class="info-header"><i class="fas fa-graduation-cap"></i> Образование</div>
+                <div class="info-header"><i class="fas fa-graduation-cap"></i> {% trans "Образование" %}</div>
                 <div class="info-content">{{ resume.education|linebreaks }}</div>
             </div>
 
             <div class="info-section">
-                <div class="info-header"><i class="fas fa-briefcase"></i> Опыт работы</div>
+                <div class="info-header"><i class="fas fa-briefcase"></i> {% trans "Опыт работы" %}</div>
                 <div class="info-content">{{ resume.experience|linebreaks }}</div>
             </div>
 
             <div class="info-section">
-                <div class="info-header"><i class="fas fa-tools"></i> Навыки (Skills)</div>
+                <div class="info-header"><i class="fas fa-tools"></i> {% trans "Навыки (Skills)" %}</div>
                 <div class="info-content">{{ resume.skills|linebreaks }}</div>
             </div>
 
             <div class="info-section">
-                <div class="info-header"><i class="fas fa-user"></i> О себе</div>
+                <div class="info-header"><i class="fas fa-user"></i> {% trans "О себе" %}</div>
                 <div class="info-content">{{ resume.about_me|linebreaks }}</div>
             </div>
         </div>
-    <a href="javascript:history.back()" class="btn-custom btn-back" style="margin-left: 800px;margin-bottom: 20px">⬅️ Назад</a>
+        <a href="javascript:history.back()" class="btn-custom btn-back" style="margin-left: 800px;margin-bottom: 20px">{% trans "⬅️ Назад" %}</a>
     </div>
-
 </div>
 {% endblock %}

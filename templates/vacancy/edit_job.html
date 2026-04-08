@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+    {% load i18n %}
+
 {% block content %}
 <style>
     .edit-container {
@@ -61,58 +63,59 @@
     }
 </style>
 
+
 <div class="edit-container">
-    <h2 style="color: white; margin-bottom: 25px; font-weight: 800;">Редактировать</h2>
+    <h2 style="color: white; margin-bottom: 25px; font-weight: 800;">{% trans "Редактировать" %}</h2>
 
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="form-group">
-            <label class="form-label">Название должности</label>
+            <label class="form-label">{% trans "Название должности" %}</label>
             <input type="text" name="title" value="{{ job.title }}" class="form-control" required>
         </div>
 
         <div class="form-group">
-            <label class="form-label">Компания</label>
+            <label class="form-label">{% trans "Компания" %}</label>
             <input type="text" name="company" value="{{ job.company }}" class="form-control" required>
         </div>
 
         <div class="grid-row form-group">
             <div>
-                <label class="form-label">Локация</label>
+                <label class="form-label">{% trans "Локация" %}</label>
                 <input type="text" name="location" value="{{ job.location }}" class="form-control">
             </div>
             <div>
-                <label class="form-label">Телефон</label>
+                <label class="form-label">{% trans "Телефон" %}</label>
                 <input type="text" name="phone" value="{{ job.phone }}" class="form-control">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="form-label">Зарплата</label>
+            <label class="form-label">{% trans "Зарплата" %}</label>
             <input type="text" name="salary" value="{{ job.salary }}" class="form-control">
         </div>
 
         <div class="form-group">
-            <label class="form-label">Тип занятости</label>
+            <label class="form-label">{% trans "Тип занятости" %}</label>
             <select name="job_type" class="form-control" required>
-                <option value="Full-time" {% if job.job_type == 'Full-time' %}selected{% endif %}>Полный рабочий день</option>
-                <option value="Part-time" {% if job.job_type == 'Part-time' %}selected{% endif %}>Пол дня работы</option>
-                <option value="Internship" {% if job.job_type == 'Internship' %}selected{% endif %}>Стажировка</option>
-                <option value="Remote" {% if job.job_type == 'Remote' %}selected{% endif %}>Работа удаленно</option>
+                <option value="Full-time" {% if job.job_type == 'Full-time' %}selected{% endif %}>{% trans "Полный рабочий день" %}</option>
+                <option value="Part-time" {% if job.job_type == 'Part-time' %}selected{% endif %}>{% trans "Пол дня работы" %}</option>
+                <option value="Internship" {% if job.job_type == 'Internship' %}selected{% endif %}>{% trans "Стажировка" %}</option>
+                <option value="Remote" {% if job.job_type == 'Remote' %}selected{% endif %}>{% trans "Работа удаленно" %}</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label class="form-label">Описание</label>
+            <label class="form-label">{% trans "Описание" %}</label>
             <textarea name="description" rows="5" class="form-control">{{ job.description }}</textarea>
         </div>
 
         <button type="submit" style="width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 16px;">
-            Сохранить изменения
+            {% trans "Сохранить изменения" %}
         </button>
 
-        <a href="{% url 'profile' %}" style="display: block; text-align: center; margin-top: 20px; color: #94a3b8; text-decoration: none; font-size: 14px;">Отмена</a>
+        <a href="{% url 'profile' %}" style="display: block; text-align: center; margin-top: 20px; color: #94a3b8; text-decoration: none; font-size: 14px;">{% trans "Отмена" %}</a>
     </form>
 </div>
 {% endblock %}

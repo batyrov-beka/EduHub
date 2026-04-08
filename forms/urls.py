@@ -13,6 +13,7 @@ path('apply/<int:job_id>/', views.apply_to_vacancy, name='apply_to_vacancy'),
 path('vacancy/<int:id>/', views.vacancy_detail, name='vacancy_detail'),
 path('my-applications/', views.student_applications, name='student_applications'),
 path('application/<int:pk>/update/<str:status>/', views.update_status, name='update_status'),
+path('resume/my/', views.my_resume, name='my_resume'),
 
 
 

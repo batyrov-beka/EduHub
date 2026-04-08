@@ -1,197 +1,78 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block content %}
 <style>
-
-.hero-wrapper {
-    padding: 70px 120px;
-    color: white;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 60px;
-}
-
-    .hero-wrapper h1 {
-        font-size: 4rem;
-        font-weight: 900;
-        letter-spacing: -2px;
-        margin-bottom: 20px;
-        background: linear-gradient(to right, #ffffff, #38bdf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .hero-wrapper p.subtitle {
-         font-size: 1.25rem;
-    color: #94a3b8;
-    max-width: 600px;
-    margin: 0 0 40px 0;
-    line-height: 1.6;
-    }
-
-
-    .auth-stack {
-       max-width: 420px;
-    margin: 0;
-    align-items: flex-start;
-    }
-
-    .btn-hero {
-        padding: 16px 30px;
-        border-radius: 16px;
-        font-weight: 700;
-        font-size: 16px;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .btn-hero-primary {
-        background: #0073b1;
-        color: white !important;
-        box-shadow: 0 10px 20px rgba(0, 115, 177, 0.3);
-    }
-
-    .btn-hero-primary:hover {
-        background: #005582;
-        transform: translateY(-3px);
-    }
-
-    .btn-hero-outline {
-        background: rgba(255, 255, 255, 0.05);
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-    }
-
-    .btn-hero-outline:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: white;
-        transform: translateY(-3px);
-    }
-
-    .divider {
-        display: flex;
-        align-items: center;
-        color: #64748b;
-        font-size: 14px;
-        margin: 10px 0;
-    }
-    .divider::before, .divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: rgba(255, 255, 255, 0.1);
-    }
+    .hero-wrapper { padding: 70px 120px; color: white; text-align: left; position: relative; overflow: hidden; margin-bottom: 60px; }
+    .hero-wrapper h1 { font-size: 4rem; font-weight: 900; letter-spacing: -2px; margin-bottom: 20px; background: linear-gradient(to right, #ffffff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-wrapper p.subtitle { font-size: 1.25rem; color: #94a3b8; max-width: 600px; margin: 0 0 40px 0; line-height: 1.6; }
+    .auth-stack { max-width: 420px; margin: 0; align-items: flex-start; }
+    .btn-hero { padding: 16px 30px; border-radius: 16px; font-weight: 700; font-size: 16px; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-hero-primary { background: #0073b1; color: white !important; box-shadow: 0 10px 20px rgba(0, 115, 177, 0.3); }
+    .btn-hero-primary:hover { background: #005582; transform: translateY(-3px); }
+    .btn-hero-outline { background: rgba(255, 255, 255, 0.05); color: white !important; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
+    .btn-hero-outline:hover { background: rgba(255, 255, 255, 0.1); border-color: white; transform: translateY(-3px); }
+    .divider { display: flex; align-items: center; color: #64748b; font-size: 14px; margin: 10px 0; }
+    .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.1); }
     .divider:not(:empty)::before { margin-right: 15px; }
     .divider:not(:empty)::after { margin-left: 15px; }
-
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 80px;
-    }
-
-    .feature-card {
-        background: #1e293b;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 24px;
-        padding: 40px 30px;
-        text-align: center;
-        transition: 0.3s;
-    }
-
-    .feature-card:hover {
-        transform: translateY(-10px);
-        background: #232f45;
-        border-color: #38bdf8;
-    }
-
-    .feature-icon {
-        font-size: 48px;
-        margin-bottom: 20px;
-        display: block;
-    }
-
-    .feature-card h4 {
-        font-size: 20px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 15px;
-    }
-
-    .feature-card p {
-        color: #94a3b8;
-        font-size: 15px;
-        line-height: 1.6;
-    }
-
-
-    @media (max-width: 768px) {
-        .hero-wrapper { padding: 60px 20px; border-radius: 20px; }
-        .hero-wrapper h1 { font-size: 2.5rem; }
-        .features-grid { grid-template-columns: 1fr; }
-    }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 80px; }
+    .feature-card { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 40px 30px; text-align: center; transition: 0.3s; }
+    .feature-card:hover { transform: translateY(-10px); background: #232f45; border-color: #38bdf8; }
+    .feature-icon { font-size: 48px; margin-bottom: 20px; display: block; }
+    .feature-card h4 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 15px; }
+    .feature-card p { color: #94a3b8; font-size: 15px; line-height: 1.6; }
+    @media (max-width: 768px) { .hero-wrapper { padding: 60px 20px; border-radius: 20px; } .hero-wrapper h1 { font-size: 2.5rem; } .features-grid { grid-template-columns: 1fr; } }
 </style>
 
-    <main>
+<main>
 <div class="container">
     <div class="hero-wrapper">
         <h1>EduHub Pro</h1>
-        <p class="subtitle">Ваш путь к успешной карьере начинается здесь. Платформа для студентов нового поколения.</p>
+        <p class="subtitle">{% trans "Ваш путь к успешной карьере начинается здесь. Платформа для студентов нового поколения." %}</p>
 
         <div class="auth-stack">
             {% if not user.is_authenticated %}
                 <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">
-                    🚀 Зарегистрироваться по почте
+                    🚀 {% trans "Зарегистрироваться по почте" %}
                 </a>
 
-                <div class="divider">или</div>
+                <div class="divider">{% trans "или" %}</div>
 
                 <a href="{% url 'login' %}" class="btn-hero btn-hero-outline">
-                    Войти в аккаунт
+                    {% trans "Войти в аккаунт" %}
                 </a>
 
                 <p style="font-size: 12px; color: #64748b; margin-top: 10px;">
-                    Регистрируясь, вы принимаете наше <a href="#" style="color: #38bdf8; text-decoration: none;">Пользовательское соглашение</a>
+                    {% trans "Регистрируясь, вы принимаете наше" %} <a href="#" style="color: #38bdf8; text-decoration: none;">{% trans "Пользовательское соглашение" %}</a>
                 </p>
             {% else %}
                 <a href="{% url 'job_list' %}" class="btn-hero btn-hero-primary" style="background: #38bdf8; color: #0f172a !important;">
-                    💼 Найти вакансии сейчас
+                    💼 {% trans "Найти вакансии сейчас" %}
                 </a>
             {% endif %}
         </div>
     </div>
 
-
-
     <div class="features-grid">
         <div class="feature-card">
             <span class="feature-icon">🚀</span>
-            <h4>Карьерный старт</h4>
-            <p>Стажировки и вакансии в топовых компаниях, отобранные специально для студентов.</p>
+            <h4>{% trans "Карьерный старт" %}</h4>
+            <p>{% trans "Стажировки и вакансии в топовых компаниях, отобранные специально для студентов." %}</p>
         </div>
 
         <div class="feature-card">
             <span class="feature-icon">📚</span>
-            <h4>База знаний</h4>
-            <p>Доступ к эксклюзивным материалам, курсам и библиотеке для профессионального роста.</p>
+            <h4>{% trans "База знаний" %}</h4>
+            <p>{% trans "Доступ к эксклюзивным материалам, курсам и библиотеке для профессионального роста." %}</p>
         </div>
 
         <div class="feature-card">
             <span class="feature-icon">🤝</span>
-            <h4>Комьюнити</h4>
-            <p>Общайтесь с единомышленниками на форуме и создавайте совместные проекты.</p>
+            <h4>{% trans "Комьюнити" %}</h4>
+            <p>{% trans "Общайтесь с единомышленниками на форуме и создавайте совместные проекты." %}</p>
         </div>
     </div>
 </div>
-    </main>
+</main>
 {% endblock %}
-
-

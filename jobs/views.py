@@ -71,7 +71,7 @@ def profile_view(request):
 
 
 
-
+    
 
 @login_required
 def reopen_vacancy(request, pk):

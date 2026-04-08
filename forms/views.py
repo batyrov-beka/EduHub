@@ -10,6 +10,7 @@ from .models import Job, Application
 from jobs.models import Job
 from django.http import HttpResponseForbidden
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 
 
@@ -40,62 +41,47 @@ def view_resume(request):
         return redirect('my_resume')
 
 
+def vacancy_detail(request, id):
+    vacancy = get_object_or_404(Job, id=id)
+    user_resumes = []
+    if request.user.is_authenticated and request.user.role == 'student':
+        user_resumes = Resume.objects.filter(user=request.user)
+
+    return render(request, 'forms/vacancy_detail.html', {
+        'vacancy': vacancy,
+        'user_resumes': user_resumes,
+    })
+
+
+
 @login_required
 def apply_to_vacancy(request, job_id):
-    job = get_object_or_404(Job, id=job_id)
-    resume = Resume.objects.filter(user=request.user).first()
+    if request.method == 'POST':
+        job = get_object_or_404(Job, id=job_id)
+        resume = Resume.objects.filter(user=request.user).first()
 
-    if not resume:
-        messages.error(request, "Сначала создайте резюме!")
-        return redirect('my_resume')
 
-    already_applied = Application.objects.filter(vacancy=job, student=request.user).exists()
+        if not resume or not resume.full_name or resume.full_name.strip() == "":
+            messages.error(request, _("Сиздин резюмеңиз толук эмес! Алгач аны толтуруңуз."))
+            return redirect('edit_resume')
 
-    if already_applied:
-        messages.warning(request, "Вы уже подавали заявку на эту вакансию.")
-    else:
+
+        already_applied = Application.objects.filter(vacancy=job, student=request.user).exists()
+        if already_applied:
+            messages.warning(request, _("Сиз бул вакансияга буга чейин эле кайрылгансыз."))
+            return redirect('vacancy_detail', id=job_id)
+
+
         Application.objects.create(
             vacancy=job,
             student=request.user,
             resume=resume
         )
 
-        try:
-            if job.employer.email:
-                subject = f"Новый кандидат на вакансию: {job.title}"
-                message = (
-                    f"Здравствуйте, {job.employer.username}!\n\n"
-                    f"На вашу вакансию '{job.title}' поступил новый отклик.\n"
-                    f"Кандидат: {request.user.get_full_name() or request.user.username}\n"
-                    f"Email кандидата: {request.user.email}\n\n"
-                    f"Детали можно посмотреть в личном кабинете на сайте."
-                )
-                send_mail(
-                    subject,
-                    message,
-                    settings.EMAIL_HOST_USER,
-                    [job.employer.email],
-                    fail_silently=False
-                )
-                messages.success(request, "Отклик отправлен, работодатель уведомлен по почте!")
-            else:
-                messages.warning(request, "Отклик принят, но у работодателя не указан Email.")
+        messages.success(request, _("Сиздин билдирүүңүз ийгиликтүү жөнөтүлдү!"))
+        return redirect('vacancy_detail', id=job_id)
 
-        except Exception as e:
-            print(f"Email Error: {e}")
-            messages.error(request, "Отклик сохранен, но произошла ошибка при отправке почты.")
-
-    return redirect('vacancy_detail', id=job_id)
-
-
-def vacancy_detail(request, id):
-    vacancy = get_object_or_404(Job, id=id)
-    user_resumes = Resume.objects.filter(user=request.user) if request.user.is_authenticated else []
-
-    return render(request, 'forms/vacancy_detail.html', {
-        'vacancy': vacancy,
-        'user_resumes': user_resumes
-    })
+    return redirect('vacancy_list')
 
 
 @login_required
@@ -113,10 +99,8 @@ def update_status(request, pk, status):
         'rejected': 'отклонена',
         'pending': 'на рассмотрении'
     }
-
     ru_status = translations.get(status, status)
     messages.success(request, f"Статус заявки успешно изменен на: {ru_status}")
-
     return redirect('employer_dashboard')
 
 

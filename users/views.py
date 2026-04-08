@@ -20,16 +20,16 @@ def register_view(request):
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
+            email = form.cleaned_data.get('email')
+            if User.objects.filter(email=email).exists():
+                form.add_error('email', "Этот адрес электронной почты уже зарегистрирован!")
+                return render(request, 'registration/register.html', {'form': form})
             user = form.save()
             login(request, user)
             return redirect('home')
-        else:
-            print(form.errors)
     else:
         form = SignUpForm()
     return render(request, 'registration/register.html', {'form': form})
-
-
 
 
 def password_reset_form(request):

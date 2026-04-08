@@ -18,3 +18,8 @@ class SignUpForm(UserCreationForm):
         fields = ("username", "email", "role", "university", "phone")
 
 
+def clean_email(self):
+    email = self.cleaned_data.get('email')
+    if User.objects.filter(email=email).exists():
+        raise forms.ValidationError("Этот адрес электронной почты уже занят!")
+    return email

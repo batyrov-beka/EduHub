@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
+
+    {% load i18n %}
+
 {% block content %}
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
 
@@ -104,7 +109,7 @@
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 700px) {
     .cabinet-header h2 { font-size: 28px; }
 
     .my-job-card {
@@ -127,19 +132,23 @@
         flex-direction: column;
         gap: 5px;
     }
+    .cabinet-header{
+        text-align: center;
+    }
 }
 </style>
 
 
+
 <div class="cabinet-container">
     <div class="cabinet-header">
-        <h2 style="display: flex; justify-content: center">Личный кабинет {{ user.username }}!</h2>
+        <h2 style="display: flex; justify-content: center">{% trans "Личный кабинет" %} {{ user.username }}!</h2>
     </div>
 
     <div class="my-vacancies-section">
-        <h3 class="vacancy-section-title" style="display: flex; justify-content: center">
+        <h3 class="vacancy-section-title" style="display: flex; justify-content: center;color: #3b82f6">
             <span class="status-dot"></span>
-            Мои вакансии
+          <i class="fa-solid fa-layer-group"></i>{% trans "Мои вакансии" %}
         </h3>
 
         <div style="display: grid; gap: 20px;">
@@ -150,7 +159,7 @@
                     <div class="job-meta">
                         <span style="color: #94a3b8;">📅 {{ job.created_at|date:"d.m.Y" }}</span>
                         <span style="color: {% if job.is_active %}#10b981{% else %}#ef4444{% endif %}; font-weight: 700;">
-                            {% if job.is_active %} ● Активна {% else %} ● Закрыта (В архиве) {% endif %}
+                            {% if job.is_active %} ● {% trans "Активна" %} {% else %} ● {% trans "Закрыта (В архиве)" %} {% endif %}
                         </span>
                     </div>
                 </div>
@@ -158,32 +167,30 @@
                 <div class="action-buttons">
                     {% if job.is_active %}
                      <a href="{% url 'close_vacancy' job.pk %}"
-   style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">
-   Закрыть
-</a>
+                        style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">
+                        {% trans "Закрыть" %}
+                     </a>
                     {% else %}
-                        <span class="btn-action btn-archive">В архиве</span>
+                        <span class="btn-action btn-archive">{% trans "В архиве" %}</span>
                         <a href="{% url 'reopen_vacancy' job.pk %}" class="btn-action btn-reopen">
-                           Опубликовать заново
+                           {% trans "Опубликовать заново" %}
                         </a>
                     {% endif %}
 
                     <div style="display: flex; gap: 10px; align-items: center;">
-    <a href="{% url 'edit_vacancy' job.pk %}"
-       style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; border: 1px solid rgba(59, 130, 246, 0.2);">
-       Изменить
-    </a>
-
-
-</div>
+                        <a href="{% url 'edit_vacancy' job.pk %}"
+                           style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                           {% trans "Изменить" %}
+                        </a>
+                    </div>
                 </div>
 
             </div>
             {% empty %}
             <div class="empty-state">
-                <p style="color: #94a3b8; font-size: 18px; margin-bottom: 15px;">Вы еще не опубликовали ни одной вакансии.</p>
+                <p style="color: #94a3b8; font-size: 18px; margin-bottom: 15px;">{% trans "Вы еще не опубликовали ни одной вакансии." %}</p>
                 <a href="{% url 'post_job' %}" style="color: var(--accent-color); text-decoration: none; font-weight: 700; font-size: 16px;">
-                    Опубликовать первую →
+                    {% trans "Опубликовать первую →" %}
                 </a>
             </div>
             {% endfor %}

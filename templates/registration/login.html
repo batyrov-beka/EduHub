@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 {% block content %}
 <style>
 
@@ -236,23 +236,25 @@ body {
 }
 </style>
 
+
+
 <div class="auth-container">
     <div class="auth-card">
-        <h2>Вход</h2>
-        <p class="subtitle">Добро пожаловать обратно в EduHub</p>
+        <h2>{% trans "Вход" %}</h2>
+        <p class="subtitle">{% trans "Добро пожаловать обратно в EduHub" %}</p>
 
         <form method="post">
             {% csrf_token %}
 
             <div class="form-group">
-                <label>Имя пользователя</label>
-                <input type="text" name="username" class="custom-input" placeholder="Введите логин" required>
+                <label>{% trans "Имя пользователя" %}</label>
+                <input type="text" name="username" class="custom-input" placeholder="{% trans 'Введите логин' %}" required>
             </div>
 
             <div class="form-group">
-                <label>Пароль</label>
+                <label>{% trans "Пароль" %}</label>
                 <div class="password-wrapper">
-                    <input type="password" name="password" id="id_password" class="custom-input" placeholder="Введите пароль" required>
+                    <input type="password" name="password" id="id_password" class="custom-input" placeholder="{% trans 'Введите пароль' %}" required>
                     <button type="button" id="togglePassword" class="eye-toggle">
                         <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -263,14 +265,14 @@ body {
             </div>
 
             <div class="forgot-link-container">
-                <a href="{% url 'custom_reset_form' %}" class="forgot-link">Забыли пароль?</a>
+                <a href="{% url 'custom_reset_form' %}" class="forgot-link">{% trans "Забыли пароль?" %}</a>
             </div>
 
-            <button type="submit" class="btn-login_1">Войти в аккаунт</button>
+            <button type="submit" class="btn-login_1">{% trans "Войти в аккаунт" %}</button>
         </form>
 
         <div class="auth-footer">
-            Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+            {% trans "Нет аккаунта?" %} <a href="{% url 'register' %}">{% trans "Зарегистрироваться" %}</a>
         </div>
     </div>
 </div>

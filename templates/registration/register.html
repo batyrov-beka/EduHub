@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 {% block content %}
 <style>
-
 :root {
     --primary-color: #0073b1;
     --primary-hover: #005582;
@@ -13,7 +12,6 @@
     --border-color: #2d3748;
     --input-focus: #3b82f6;
 }
-
 
 .auth-card input:-webkit-autofill,
 .auth-card input:-webkit-autofill:hover,
@@ -43,21 +41,11 @@ body {
 }
 
 @keyframes gradient {
-    0% {
-        background-position: 0% 25%;
-    }
-    25% {
-        background-position: 25% 50%;
-    }
-    50% {
-        background-position: 50% 75%;
-    }
-    75% {
-        background-position: 75% 100%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+    0% { background-position: 0% 25%; }
+    25% { background-position: 25% 50%; }
+    50% { background-position: 50% 75%; }
+    75% { background-position: 75% 100%; }
+    100% { background-position: 0% 50%; }
 }
 
 .auth-container {
@@ -106,7 +94,6 @@ body {
     color: var(--text-main);
     margin-bottom: 8px;
 }
-
 
 .auth-card input,
 .auth-card select {
@@ -217,6 +204,17 @@ body {
     line-height: 1.4;
 }
 
+/* КАТАЛАР ҮЧҮН КОШУМЧА СТИЛЬ */
+.alert-error {
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(225, 29, 72, 0.1);
+    color: #e11d48;
+    border: 1px solid rgba(225, 29, 72, 0.2);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+}
 
 @media (max-width: 480px) {
     .auth-card {
@@ -232,10 +230,18 @@ body {
 }
 </style>
 
+
+
 <div class="auth-container">
     <div class="auth-card">
-        <h2>Регистрация </h2>
-        <p class="subtitle">Создайте аккаунт, чтобы начать обучение в EduHub</p>
+        <h2>{% trans "Регистрация" %}</h2>
+        <p class="subtitle">{% trans "Создайте аккаунт, чтобы начать обучение в EduHub" %}</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-error">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
         <form method="post" id="registerForm" novalidate>
             {% csrf_token %}
@@ -243,22 +249,24 @@ body {
             {% for field in form %}
                 <div class="form-group">
                     <label for="{{ field.id_for_label }}">
-                        {% if field.name == "username" %}Имя пользователя
-                        {% elif field.name == "email" %}Электронная почта
-                        {% elif field.name == "password1" %}Придумайте пароль
-                        {% elif field.name == "password2" %}Повторите пароль
-                        {% elif field.name == "role" %}Выберите вашу роль
+                        {% if field.name == "username" %}{% trans "Имя пользователя" %}
+                        {% elif field.name == "email" %}{% trans "Электронная почта" %}
+                        {% elif field.name == "password1" %}{% trans "Придумайте пароль" %}
+                        {% elif field.name == "password2" %}{% trans "Повторите пароль" %}
+                        {% elif field.name == "role" %}{% trans "Выберите вашу роль" %}
                         {% else %}{{ field.label }}
                         {% endif %}
                     </label>
 
                     <div class="{% if 'password' in field.name %}password-wrapper{% endif %}">
-
-
                         {% if field.name == "role" %}
                             <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="auth-input">
                                 {% for value, text in field.field.choices %}
-                                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>{{ text }}</option>
+                                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>
+                                        {% if text == "Student" or text == "Студент" %}{% trans "Студент" %}
+                                        {% elif text == "Employer" or text == "Работодатель" %}{% trans "Работодатель" %}
+                                        {% else %}{{ text }}{% endif %}
+                                    </option>
                                 {% endfor %}
                             </select>
                         {% else %}
@@ -285,17 +293,16 @@ body {
                 </div>
             {% endfor %}
 
-            <button type="submit" class="btn-register">Создать аккаунт</button>
+            <button type="submit" class="btn-register">{% trans "Создать аккаунт" %}</button>
         </form>
 
         <div class="auth-footer">
-            Уже есть аккаунт? <a href="{% url 'login' %}">Войти здесь</a>
+            {% trans "Уже есть аккаунт?" %} <a href="{% url 'login' %}">{% trans "Войти здесь" %}</a>
         </div>
     </div>
 </div>
 
 <script>
-
     const eyePath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
     const eyeSlashPath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 1.247 0 2.41.226 3.487.638M19.88 19.88L3 3m16.88 16.88l-3.69-3.69m3.69 3.69l3.12 3.12M18.165 11.705A10.039 10.039 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M17.657 5.343A10.062 10.062 0 0112 5c-4.478 0-8.268 2.943-9.542 7-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M9.88 9.88l.458.458m4.342 4.342l.458.458m-4.342-4.342a3 3 0 114.243 4.243m-4.242-4.242L3 3" />`;
 

@@ -379,19 +379,20 @@
 
 
 
+{% load i18n %}
 <div class="container">
     <div class="page-header">
-        <h2>Актуальные предложения</h2>
-        <p>Найдите работу или стажировку, которая изменит вашу жизнь</p>
+        <h2>{% trans "Актуальные предложения" %}</h2> <br>
+        <p>{% trans "Найдите работу или стажировку, которая изменит вашу жизнь" %}</p>
     </div>
 
     <div class="search-container">
     <div class="search-section">
         <form method="GET" action="{% url 'vacancy_list' %}" class="search-row">
             <input type="text" name="search" class="search-input"
-                   placeholder="Поиск вакансий..."
+                   placeholder="{% trans 'Поиск вакансий...' %}"
                    value="{{ request.GET.search|default:'' }}" autocomplete="off">
-            <button type="submit" class="btn-search">Найти</button>
+            <button type="submit" class="btn-search">{% trans "Найти" %}</button>
         </form>
     </div>
 </div>

@@ -6,25 +6,32 @@
 <style>
     body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
 
-    .dashboard-container { max-width: 1000px; margin: 60px auto; padding: 0 20px; }
+    .dashboard-container { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
+
 
     .page-title {
         font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 30px;
+        font-weight: 800;
+        margin-bottom: 35px;
         color: #f8fafc;
         display: flex;
         align-items: center;
-        text-align: center;
         justify-content: center;
-        align-content: center;
-        gap: 12px;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .page-title i {
+        margin: 0;
+        padding: 0;
+        color: #38bdf8;
+        font-size: 1.6rem;
     }
 
     .app-card {
         background: #1e293b;
         border: 1px solid #334155;
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 25px;
         margin-bottom: 16px;
         display: flex;
@@ -32,23 +39,51 @@
         align-items: center;
         transition: 0.3s ease;
     }
+
     .app-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
 
-
-    .candidate-info { display: flex; flex-direction: column; gap: 5px; }
-
     .candidate-name {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #38bdf8;
         text-decoration: none;
-        transition: 0.2s;
+        display: block;
+        margin-bottom: 5px;
     }
-    .candidate-name:hover { color: #f8fafc; }
 
     .vacancy-name { color: #94a3b8; font-size: 0.95rem; }
-    .vacancy-name strong { color: #e2e8f0; }
-    .date-text { color: #64748b; font-size: 0.85rem; margin-top: 5px; }
+    .date-text { color: #64748b; font-size: 0.85rem; margin-top: 8px; }
+
+
+    @media (max-width: 700px) {
+        .dashboard-container { margin: 20px auto; }
+
+        .page-title {
+            font-size: 1.4rem;
+            gap: 8px;
+        }
+
+        .app-card {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .actions-group {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px 5px !important;
+            justify-content: center !important;
+            font-size: 0.85rem !important;
+        }
+    }
 
     .status-pill {
         display: inline-block;
@@ -57,70 +92,49 @@
         font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
     .status-pending { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
     .status-accepted { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
     .status-rejected { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
 
-    .actions-group { display: flex; gap: 10px; }
-
     .btn-action {
         padding: 10px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
+        border-radius: 12px;
+        font-weight: 700;
         border: none;
         cursor: pointer;
-        transition: 0.2s;
         display: flex;
         align-items: center;
         gap: 8px;
         text-decoration: none;
     }
-
     .btn-approve { background: #10b981; color: #0f172a; }
-    .btn-approve:hover { background: #34d399; transform: scale(1.05); }
-
     .btn-decline { background: #334155; color: #f87171; border: 1px solid #475569; }
-    .btn-decline:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px;
-        background: #1e293b;
-        border-radius: 20px;
-        border: 2px dashed #334155;
-        color: #64748b;
-    }
-
-    @media (max-width: 768px) {
-        .app-card { flex-direction: column; align-items: flex-start; gap: 20px; }
-        .actions-group { width: 100%; }
-        .btn-action { flex: 1; justify-content: center; }
-    }
 </style>
 
+{% load i18n %}
 <div class="dashboard-container">
     <h2 class="page-title">
-        <i class="fas fa-users-cog text-info"></i> Отклики на вакансии
+        <i class="fas fa-users-cog"></i>
+        <span>{% trans "Отклики на вакансии" %}</span>
     </h2>
 
     {% for app in applications %}
     <div class="app-card">
         <div class="candidate-side">
             <span class="status-pill status-{{ app.status|lower }}">
-                {% if app.status == 'pending' %} На рассмотрении
-                {% elif app.status == 'accepted' %} Принят
-                {% else %} Отклонен {% endif %}
+                {% if app.status == 'pending' %} {% trans "На рассмотрении" %}
+                {% elif app.status == 'accepted' %} {% trans "Принят" %}
+                {% else %} {% trans "Отклонен" %} {% endif %}
             </span>
 
             <a href="{% url 'view_student_resume' app.resume.id %}" class="candidate-name">
                 <i class="far fa-user-circle"></i> {{ app.resume.full_name }}
             </a>
 
-            <div class="vacancy-name mt-1">
-                Вакансия: <strong>{{ app.vacancy.title }}</strong>
+            <div class="vacancy-name">
+                {% trans "Вакансия:" %} <strong>{{ app.vacancy.title }}</strong>
             </div>
 
             <div class="date-text">
@@ -130,30 +144,28 @@
 
         <div class="actions-group">
             {% if app.status == 'pending' %}
-                <form action="{% url 'update_status' app.id 'accepted' %}" method="POST" class="m-0">
+                <form action="{% url 'update_status' app.id 'accepted' %}" method="POST" style="margin:0">
                     {% csrf_token %}
-                    <button type="submit" class="btn-action btn-approve">
-                        <i class="fas fa-check"></i> Принять
+                    <button type="submit" class="btn-action btn-approve" style="margin-bottom: 10px">
+                        <i class="fas fa-check"></i> {% trans "Принять" %}
                     </button>
                 </form>
 
-                <form action="{% url 'update_status' app.id 'rejected' %}" method="POST" class="m-0">
+                <form action="{% url 'update_status' app.id 'rejected' %}" method="POST" style="margin:0">
                     {% csrf_token %}
                     <button type="submit" class="btn-action btn-decline">
-                        <i class="fas fa-times"></i> Отказать
+                        <i class="fas fa-times"></i> {% trans "Отказать" %}
                     </button>
                 </form>
             {% else %}
-                <div class="text-secondary small">Статус обновлен</div>
+                <div style="color: #64748b; font-size: 0.9rem;">{% trans "Статус обновлен" %}</div>
             {% endif %}
         </div>
     </div>
     {% empty %}
-    <div class="empty-state">
-        <i class="fas fa-inbox fa-3x mb-3"></i>
-        <p class="fs-5">На данный момент откликов пока нет.</p>
+    <div style="text-align: center; padding: 50px; background: #1e293b; border-radius: 20px; border: 2px dashed #334155;">
+        <p style="color: #64748b;">{% trans "Ответов пока нет" %}</p>
     </div>
     {% endfor %}
 </div>
-
 {% endblock %}
