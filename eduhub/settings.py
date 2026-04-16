@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'jobs',
     'materials',
     'forms',
+    'Dashboard',
+
 
 ]
 
@@ -53,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Dashboard.middleware.VerificationMiddleware',
 ]
 
 ROOT_URLCONF = 'eduhub.urls'
@@ -122,6 +125,7 @@ USE_I18N = True
 USE_TZ = True
 
 import os
+
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale/'),
 ]
@@ -135,8 +139,13 @@ STATIC_URL = 'static/'
 
 
 
-LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
+
+LOGOUT_ON_GET = True
+
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 
 
@@ -153,6 +162,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 import os
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        font-family: 'Inter', sans-serif;
+    }
+
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+        padding: 30px;
+        border-radius: 28px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: #38bdf8;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .tabs-nav {
+        display: flex;
+        gap: 15px;
+        margin: 30px 0;
+        background: rgba(30, 41, 59, 0.5);
+        padding: 8px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        padding: 12px 24px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: 0.3s;
+        border-radius: 16px;
+        flex: 1;
+        white-space: nowrap;
+    }
+
+    .tab-btn.active {
+        color: white;
+        background: #38bdf8;
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+
+    .glass-card {
+        background: #1e293b;
+        padding: 24px;
+        border-radius: 24px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: 0.3s;
+    }
+
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 10px 18px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 13px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.2s;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-view { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
+    .btn-view:hover { background: #38bdf8; color: white; }
+
+
+    .btn-block { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    .btn-block:hover { background: #f59e0b; color: white; }
+    .btn-unblock { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .btn-unblock:hover { background: #10b981; color: white; }
+
+    .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .btn-delete:hover { background: #ef4444; color: white; }
+
+    .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
+    .tab-content.active { display: block; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .glass-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .btn-group { width: 100%; }
+        .btn-action { flex: 1; justify-content: center; min-width: 140px; }
+    }
+</style>
+
+<div class="admin-container">
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span style="font-size: 2.5rem;">🎓</span>
+            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_students }}</h3>
+            <p style="color: #94a3b8; font-weight: 600;">{% trans "Студенты" %}</p>
+        </div>
+        <div class="stat-card">
+            <span style="font-size: 2.5rem;">🏢</span>
+            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_employers }}</h3>
+            <p style="color: #94a3b8; font-weight: 600;">{% trans "Компании" %}</p>
+        </div>
+        <div class="stat-card">
+            <span style="font-size: 2.5rem;">💼</span>
+            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_jobs }}</h3>
+            <p style="color: #94a3b8; font-weight: 600;">{% trans "Активные вакансии" %}</p>
+        </div>
+    </div>
+
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="openTab(event, 'students_tab')">👨‍🎓 {% trans "Студенты" %}</button>
+        <button class="tab-btn" onclick="openTab(event, 'employers_tab')">🏢 {% trans "Работодатели" %}</button>
+        <button class="tab-btn" onclick="openTab(event, 'jobs_tab')">💼 {% trans "Вакансии" %}</button>
+        <button class="tab-btn" onclick="openTab(event, 'requests_tab')">📩 {% trans "Запросы" %} ({{ pending_users.count|default:0 }})</button>
+    </div>
+
+    <div id="students_tab" class="tab-content active">
+        {% for student in students %}
+            <div class="glass-card">
+                <div>
+                    <h4 style="color: white; margin: 0;">{{ student.username }} {% if student.is_blocked %}<span style="color: #ef4444; font-size: 12px;">(🚫 {% trans "Заблокирован" %})</span>{% endif %}</h4>
+                    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">📧 {{ student.email }}</p>
+                </div>
+                <div class="btn-group">
+                    {% if student.resume %}
+                        <a href="{% url 'view_student_resume' student.resume.id %}" class="btn-action btn-view">👁 {% trans "Резюме" %}</a>
+                    {% endif %}
+
+                    <a href="{% url 'toggle_user_block' student.id %}" class="btn-action {% if student.is_blocked %}btn-unblock{% else %}btn-block{% endif %}">
+                        {% if student.is_blocked %}✅ {% trans "Разблокировать" %}{% else %}🚫 {% trans "Заблокировать" %}{% endif %}
+                    </a>
+
+                    <form id="delete-user-{{ student.id }}" action="{% url 'delete_user' student.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
+                    <button onclick="handleAction('delete', 'delete-user-{{ student.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="employers_tab" class="tab-content">
+        {% for employer in employers %}
+            <div class="glass-card">
+                <div>
+                    <h4 style="color: white; margin: 0;">{{ employer.username }} {% if employer.is_blocked %}<span style="color: #ef4444; font-size: 12px;">(🚫 {% trans "Заблокирован" %})</span>{% endif %}</h4>
+                    <p style="color: #10b981; font-size: 0.9rem; margin-top: 5px;">📩 {{ employer.email }}</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'job_list' %}" class="btn-action btn-view">💼 {% trans "Вакансии" %}</a>
+
+                    <a href="{% url 'toggle_user_block' employer.id %}" class="btn-action {% if employer.is_blocked %}btn-unblock{% else %}btn-block{% endif %}">
+                        {% if employer.is_blocked %}✅ {% trans "Разблокировать" %}{% else %}🚫 {% trans "Заблокировать" %}{% endif %}
+                    </a>
+
+                    <form id="delete-user-{{ employer.id }}" action="{% url 'delete_user' employer.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
+                    <button onclick="handleAction('delete', 'delete-user-{{ employer.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="jobs_tab" class="tab-content">
+        {% for job in all_jobs %}
+            <div class="glass-card">
+                <div>
+                    <h4 style="color: white; margin: 0; font-size: 1.1rem;">{{ job.title }}</h4>
+                    <small style="color: #38bdf8;">🏢 {{ job.company.username }}</small>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'vacancy_detail' job.id %}" class="btn-action btn-view">👁 {% trans "Просмотр" %}</a>
+                    <form id="delete-job-{{ job.id }}" action="{% url 'delete_job' job.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
+                    <button onclick="handleAction('delete', 'delete-job-{{ job.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div id="requests_tab" class="tab-content">
+        {% for user in pending_users %}
+            <div class="glass-card">
+                <div>
+                    <h4 style="color: white; margin: 0;">{{ user.username }} <span style="font-size: 12px; color: #fbbf24;">({{ user.role }})</span></h4>
+                    <p style="color: #94a3b8; font-size: 13px; margin: 5px 0;">ИНН/ID: {{ user.verification_data }}</p>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'approve_user' user.id %}" class="btn-action" style="background: #10b981; color: white;">✅ {% trans "Одобрить" %}</a>
+                    <a href="{% url 'reject_user' user.id %}" class="btn-action btn-delete">❌ {% trans "Отклонить" %}</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tab-btn");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    function handleAction(type, formId) {
+        let title = type === 'delete' ? '{% trans "Удалить?" %}' : '{% trans "Подтвердить?" %}';
+        let text = type === 'delete' ? '{% trans "Эти данные будут безвозвратно удалены!" %}' : '{% trans "Вы хотите выполнить это действие?" %}';
+
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#334155',
+            confirmButtonText: '{% trans "Да" %}',
+            cancelButtonText: '{% trans "Нет" %}',
+            background: '#1e293b',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+</script>
+{% endblock %}

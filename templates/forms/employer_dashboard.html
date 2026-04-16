@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block content %}
+{% load i18n %}
 
+{% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
     body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
 
     .dashboard-container { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
-
 
     .page-title {
         font-size: 1.8rem;
@@ -17,121 +17,163 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        text-align: center;
+        gap: 12px;
     }
 
-    .page-title i {
-        margin: 0;
-        padding: 0;
-        color: #38bdf8;
-        font-size: 1.6rem;
+    .page-title i { color: #38bdf8; }
+
+
+    .filter-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
+
+    .tab-btn {
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        text-decoration: none;
+        color: #94a3b8;
+        font-weight: 600;
+        transition: 0.3s;
+        font-size: 14px;
+    }
+
+    .tab-btn.active {
+        background: rgba(59, 130, 246, 0.15) !important;
+        border-color: #3b82f6 !important;
+        color: #3b82f6 !important;
+    }
+
 
     .app-card {
-        background: #1e293b;
-        border: 1px solid #334155;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 20px;
         padding: 25px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         transition: 0.3s ease;
     }
 
-    .app-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
+    .app-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
 
     .candidate-name {
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: #38bdf8;
         text-decoration: none;
-        display: block;
-        margin-bottom: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
     }
 
-    .vacancy-name { color: #94a3b8; font-size: 0.95rem; }
-    .date-text { color: #64748b; font-size: 0.85rem; margin-top: 8px; }
+    .vacancy-name { color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
+    .vacancy-name strong { color: #38bdf8; }
+    .date-text { color: #64748b; font-size: 0.85rem; }
 
-
-    @media (max-width: 700px) {
-        .dashboard-container { margin: 20px auto; }
-
-        .page-title {
-            font-size: 1.4rem;
-            gap: 8px;
-        }
-
-        .app-card {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .actions-group {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 12px 5px !important;
-            justify-content: center !important;
-            font-size: 0.85rem !important;
-        }
-    }
 
     .status-pill {
         display: inline-block;
-        padding: 4px 12px;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 800;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin-bottom: 12px;
     }
-    .status-pending { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .status-accepted { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .status-rejected { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+
+    .actions-group { display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
 
     .btn-action {
-        padding: 10px 20px;
+        width: 100%;
+        padding: 12px 20px;
         border-radius: 12px;
         font-weight: 700;
         border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 8px;
-        text-decoration: none;
+        justify-content: center;
+        gap: 10px;
+        font-size: 14px;
+        transition: 0.2s;
     }
+
     .btn-approve { background: #10b981; color: #0f172a; }
-    .btn-decline { background: #334155; color: #f87171; border: 1px solid #475569; }
+    .btn-approve:hover { background: #059669; }
+    .btn-decline { background: #ef4444; color: white; }
+    .btn-decline:hover { background: #dc2626; }
+
+
+    @media (max-width: 768px) {
+        .app-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .actions-group {
+            width: 100%;
+            flex-direction: row;
+        }
+
+        .actions-group form { flex: 1; }
+
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px 5px;
+            font-size: 12px;
+        }
+
+        .page-title { font-size: 1.4rem; }
+    }
 </style>
 
-{% load i18n %}
 <div class="dashboard-container">
-    <h2 class="page-title">
+    <h1 class="page-title">
         <i class="fas fa-users-cog"></i>
         <span>{% trans "Отклики на вакансии" %}</span>
-    </h2>
+    </h1>
+
+    <div class="filter-tabs">
+        <a href="?" class="tab-btn {% if not current_status %}active{% endif %}">
+            {% trans "Все" %}
+        </a>
+        <a href="?status=pending" class="tab-btn {% if current_status == 'pending' %}active{% endif %}" style="border-color: rgba(245, 158, 11, 0.3);">
+            {% trans "Новые" %}
+        </a>
+        <a href="?status=accepted" class="tab-btn {% if current_status == 'accepted' %}active{% endif %}" style="border-color: rgba(16, 185, 129, 0.3);">
+            {% trans "Принятые" %}
+        </a>
+        <a href="?status=rejected" class="tab-btn {% if current_status == 'rejected' %}active{% endif %}" style="border-color: rgba(239, 68, 68, 0.3);">
+            {% trans "Отклоненные" %}
+        </a>
+    </div>
 
     {% for app in applications %}
     <div class="app-card">
         <div class="candidate-side">
-            <span class="status-pill status-{{ app.status|lower }}">
-                {% if app.status == 'pending' %} {% trans "На рассмотрении" %}
-                {% elif app.status == 'accepted' %} {% trans "Принят" %}
-                {% else %} {% trans "Отклонен" %} {% endif %}
+            <span class="status-pill" style="background: rgba(255,255,255,0.05); color: {% if app.status == 'accepted' %}#10b981{% elif app.status == 'rejected' %}#ef4444{% else %}#f59e0b{% endif %}; border: 1px solid rgba(255,255,255,0.1);">
+                ● {{ app.get_status_display }}
             </span>
 
-            <a href="{% url 'view_student_resume' app.resume.id %}" class="candidate-name">
-                <i class="far fa-user-circle"></i> {{ app.resume.full_name }}
-            </a>
+            <div>
+                <a href="{% url 'view_student_resume' app.resume.id %}" class="candidate-name">
+                    <i class="far fa-user-circle"></i> {{ app.resume.full_name }}
+                </a>
+            </div>
 
             <div class="vacancy-name">
                 {% trans "Вакансия:" %} <strong>{{ app.vacancy.title }}</strong>
@@ -144,28 +186,52 @@
 
         <div class="actions-group">
             {% if app.status == 'pending' %}
-                <form action="{% url 'update_status' app.id 'accepted' %}" method="POST" style="margin:0">
+                <form action="{% url 'update_status' app.id 'accepted' %}" method="POST">
                     {% csrf_token %}
-                    <button type="submit" class="btn-action btn-approve" style="margin-bottom: 10px">
+                    <button type="submit" class="btn-action btn-approve">
                         <i class="fas fa-check"></i> {% trans "Принять" %}
                     </button>
                 </form>
-
-                <form action="{% url 'update_status' app.id 'rejected' %}" method="POST" style="margin:0">
+                <form action="{% url 'update_status' app.id 'rejected' %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" class="btn-action btn-decline">
                         <i class="fas fa-times"></i> {% trans "Отказать" %}
                     </button>
                 </form>
             {% else %}
-                <div style="color: #64748b; font-size: 0.9rem;">{% trans "Статус обновлен" %}</div>
+                <div style="color: #64748b; font-size: 0.85rem; text-align: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
+                    <i class="fas fa-info-circle"></i> {% trans "Обработано" %}
+                </div>
             {% endif %}
         </div>
     </div>
     {% empty %}
-    <div style="text-align: center; padding: 50px; background: #1e293b; border-radius: 20px; border: 2px dashed #334155;">
-        <p style="color: #64748b;">{% trans "Ответов пока нет" %}</p>
+    <div style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border-radius: 24px; border: 2px dashed rgba(255,255,255,0.1);">
+        <i class="fas fa-inbox" style="font-size: 3rem; color: #334155; margin-bottom: 20px;"></i>
+        <p style="color: #94a3b8; font-size: 1.1rem;">{% trans "Пока нет новых откликов по этому фильтру." %}</p>
     </div>
     {% endfor %}
+
+    {% if applications.has_other_pages %}
+    <div class="pagination-wrapper" style="margin-top: 40px; display: flex; justify-content: center; align-items: center; gap: 15px;">
+        {% if applications.has_previous %}
+            <a href="?page={{ applications.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}"
+               style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; border: 1px solid rgba(56, 189, 248, 0.2);">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        {% endif %}
+
+        <span style="color: #f8fafc; font-weight: 700; font-size: 0.9rem; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 10px;">
+            {{ applications.number }} / {{ applications.paginator.num_pages }}
+        </span>
+
+        {% if applications.has_next %}
+            <a href="?page={{ applications.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}"
+               style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; border: 1px solid rgba(56, 189, 248, 0.2);">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

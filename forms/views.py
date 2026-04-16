@@ -11,6 +11,7 @@ from jobs.models import Job
 from django.http import HttpResponseForbidden
 from django.conf import settings
 from django.utils.translation import gettext as _
+from django.core.paginator import Paginator
 
 
 
@@ -62,13 +63,13 @@ def apply_to_vacancy(request, job_id):
 
 
         if not resume or not resume.full_name or resume.full_name.strip() == "":
-            messages.error(request, _("Сиздин резюмеңиз толук эмес! Алгач аны толтуруңуз."))
+            messages.error(request, _("Ваше резюме не заполнено! Сначала заполните его."))
             return redirect('edit_resume')
 
 
         already_applied = Application.objects.filter(vacancy=job, student=request.user).exists()
         if already_applied:
-            messages.warning(request, _("Сиз бул вакансияга буга чейин эле кайрылгансыз."))
+            messages.warning(request, _("Вы уже подавали заявку на эту вакансию."))
             return redirect('vacancy_detail', id=job_id)
 
 
@@ -78,7 +79,7 @@ def apply_to_vacancy(request, job_id):
             resume=resume
         )
 
-        messages.success(request, _("Сиздин билдирүүңүз ийгиликтүү жөнөтүлдү!"))
+        messages.success(request, _("Ваш отклик успешно отправлен!"))
         return redirect('vacancy_detail', id=job_id)
 
     return redirect('vacancy_list')
@@ -106,15 +107,19 @@ def update_status(request, pk, status):
 
 @login_required
 def employer_dashboard(request):
-    if request.user.role != 'employer':
-        return HttpResponseForbidden("Доступ только для работодателей!")
+    status_filter = request.GET.get('status')
 
-    applications = Application.objects.filter(
-        vacancy__posted_by=request.user
-    ).order_by('-created_at')
+    apps_list = Application.objects.filter(vacancy__posted_by=request.user).order_by('-created_at')
+    if status_filter:
+        apps_list = apps_list.filter(status=status_filter)
+    paginator = Paginator(apps_list, 10)
+    page_number = request.GET.get('page')
+
+    applications = paginator.get_page(page_number)
 
     return render(request, 'forms/employer_dashboard.html', {
-        'applications': applications
+        'applications': applications,
+        'current_status': status_filter
     })
 
 

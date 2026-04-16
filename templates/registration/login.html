@@ -243,6 +243,19 @@ body {
         <h2>{% trans "Вход" %}</h2>
         <p class="subtitle">{% trans "Добро пожаловать обратно в EduHub" %}</p>
 
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+                <div style="padding: 15px; border-radius: 12px; margin-bottom: 10px;
+                            background: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.1){% else %}rgba(16, 185, 129, 0.1){% endif %};
+                            color: {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %};
+                            border: 1px solid {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
         <form method="post">
             {% csrf_token %}
 

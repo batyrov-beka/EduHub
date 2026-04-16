@@ -195,6 +195,32 @@
             </div>
             {% endfor %}
         </div>
-    </div>
+
+        {% if user_vacancies.has_other_pages %}
+        <div class="pagination-wrapper" style="margin-top: 40px; display: flex; justify-content: center;">
+            <div class="pagination-box" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
+
+                {% if user_vacancies.has_previous %}
+                    <a href="?page={{ user_vacancies.previous_page_number }}"
+                       style="color: #3b82f6; text-decoration: none; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.1); border-radius: 10px; transition: 0.3s;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </a>
+                {% endif %}
+
+                <div style="color: white; font-weight: 600; font-size: 14px; padding: 0 10px;">
+                    {{ user_vacancies.number }} / {{ user_vacancies.paginator.num_pages }}
+                </div>
+
+                {% if user_vacancies.has_next %}
+                    <a href="?page={{ user_vacancies.next_page_number }}"
+                       style="color: #3b82f6; text-decoration: none; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.1); border-radius: 10px; transition: 0.3s;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endif %}
+        </div>
 </div>
 {% endblock %}

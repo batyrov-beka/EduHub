@@ -13,28 +13,17 @@
     --input-focus: #3b82f6;
 }
 
-.auth-card input:-webkit-autofill,
-.auth-card input:-webkit-autofill:hover,
-.auth-card input:-webkit-autofill:focus,
-.auth-card textarea:-webkit-autofill,
-.auth-card select:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 50, 80, 0.6) inset;
-    -webkit-text-fill-color: #e0e7ff;
-    transition: background-color 5000s ease-in-out 0s;
+/* Автозаполнение үчүн стиль */
+.auth-card input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 50, 80, 0.6) inset !important;
+    -webkit-text-fill-color: #e0e7ff !important;
 }
 
 body {
     background-color: var(--bg-color);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: white;
-
-    background: linear-gradient(
-        -45deg,
-        #0f1419,
-        #1a3a52,
-        #0f1419,
-        #1a2b4a
-    );
+    background: linear-gradient(-45deg, #0f1419, #1a3a52, #0f1419, #1a2b4a);
     background-size: 400% 400%;
     animation: gradient 8s ease infinite;
     min-height: 100vh;
@@ -42,9 +31,7 @@ body {
 
 @keyframes gradient {
     0% { background-position: 0% 25%; }
-    25% { background-position: 25% 50%; }
     50% { background-position: 50% 75%; }
-    75% { background-position: 75% 100%; }
     100% { background-position: 0% 50%; }
 }
 
@@ -62,21 +49,19 @@ body {
     background: rgba(131, 168, 211, 0.12);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    color: white;
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
 .auth-card h2 {
     font-size: 28px;
     font-weight: 800;
     text-align: center;
-    color: var(--text-main);
     margin-bottom: 8px;
 }
 
-.auth-card p.subtitle {
+.subtitle {
     text-align: center;
     color: var(--text-muted);
     font-size: 15px;
@@ -91,12 +76,12 @@ body {
     display: block;
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-main);
     margin-bottom: 8px;
 }
 
 .auth-card input,
-.auth-card select {
+.auth-card select,
+.auth-card textarea {
     width: 100%;
     padding: 12px 16px;
     font-size: 15px;
@@ -109,50 +94,26 @@ body {
     box-sizing: border-box;
 }
 
-.auth-card input::placeholder {
-    color: rgba(224, 231, 255, 0.6);
-}
-
-.auth-card input:focus,
-.auth-card select:focus {
+.auth-card input:focus, .auth-card select:focus, .auth-card textarea:focus {
     border-color: var(--input-focus);
     background: rgba(30, 50, 80, 0.8);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
-    color: #ffffff;
-}
-
-.auth-card select option {
-    background: #1a2b4a;
-    color: white;
 }
 
 .password-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
 }
 
 .eye-toggle {
     position: absolute;
     right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
-    padding: 8px;
     cursor: pointer;
     color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    transition: color 0.2s;
     z-index: 5;
-}
-
-.eye-toggle:hover {
-    color: var(--text-main);
-}
-
-.eye-toggle svg {
-    width: 20px;
-    height: 20px;
 }
 
 .btn-register {
@@ -172,17 +133,11 @@ body {
 .btn-register:hover {
     background-color: var(--primary-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 115, 177, 0.3);
-}
-
-.btn-register:active {
-    transform: translateY(0);
 }
 
 .auth-footer {
     text-align: center;
     margin-top: 24px;
-    font-size: 14px;
     color: var(--text-muted);
 }
 
@@ -192,45 +147,80 @@ body {
     font-weight: 600;
 }
 
-.auth-footer a:hover {
-    text-decoration:none;
-}
-
 .help-text {
     font-size: 12px;
     color: var(--text-muted);
-    margin-top: 6px;
     display: block;
-    line-height: 1.4;
+    margin-top: 5px;
 }
 
-/* КАТАЛАР ҮЧҮН КОШУМЧА СТИЛЬ */
 .alert-error {
     padding: 12px;
-    border-radius: 12px;
     background: rgba(225, 29, 72, 0.1);
     color: #e11d48;
     border: 1px solid rgba(225, 29, 72, 0.2);
-    font-size: 14px;
-    text-align: center;
+    border-radius: 12px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0px 1000px #1e3250 inset !important;
+    -webkit-text-fill-color: #e0e7ff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.auth-card input,
+.auth-card select,
+.auth-card textarea {
+    background-color: rgba(30, 50, 80, 0.6) !important;
+    color: #e0e7ff !important;
+}
+
+
 @media (max-width: 480px) {
-    .auth-card {
-        padding: 30px 20px;
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-        background: transparent;
-    }
     .auth-container {
-        padding: 0;
+        padding: 10px;
+        align-items: flex-start;
+        padding-top: 30px;
+    }
+
+    .auth-card {
+        padding: 25px 20px;
+        border-radius: 20px;
+    }
+
+    .auth-card h2 {
+        font-size: 22px;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+
+    .auth-card input,
+    .auth-card select,
+    .auth-card textarea {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .btn-register {
+        padding: 12px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 350px) {
+    .auth-card {
+        padding: 20px 15px;
     }
 }
 </style>
-
-
 
 <div class="auth-container">
     <div class="auth-card">
@@ -260,7 +250,7 @@ body {
 
                     <div class="{% if 'password' in field.name %}password-wrapper{% endif %}">
                         {% if field.name == "role" %}
-                            <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="auth-input">
+                            <select name="{{ field.name }}" id="{{ field.id_for_label }}">
                                 {% for value, text in field.field.choices %}
                                     <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>
                                         {% if text == "Student" or text == "Студент" %}{% trans "Студент" %}
@@ -275,7 +265,7 @@ body {
 
                         {% if "password" in field.name %}
                             <button type="button" class="eye-toggle toggle-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
                                     <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
@@ -295,7 +285,6 @@ body {
 
             <button type="submit" class="btn-register">{% trans "Создать аккаунт" %}</button>
         </form>
-
         <div class="auth-footer">
             {% trans "Уже есть аккаунт?" %} <a href="{% url 'login' %}">{% trans "Войти здесь" %}</a>
         </div>

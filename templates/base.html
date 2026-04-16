@@ -342,9 +342,9 @@
             <a class="btn btn-login" href="{% url 'view_resume' %}">📝 {% trans "Мое резюме" %}</a>
         {% endif %}
 
-        {% if user.role == 'employer' %}
+       {% if user.is_authenticated and user.role == 'employer' %}
             <a class="btn btn-post" href="{% url 'post_job' %}">+ {% trans "Опубликовать" %}</a>
-        {% endif %}
+       {% endif %}
 
           <a href="{% url 'profile' %}" style="text-decoration: none; color: white; margin-left: 15px;">
                👤 {{ user.username }}
@@ -426,6 +426,7 @@
         {% endif %}
     </div>
     </div>
+
 
         {% block content %}
         {% endblock %}

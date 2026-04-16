@@ -18,6 +18,9 @@ urlpatterns += i18n_patterns(
     path('jobs/', include('jobs.urls')),
     path('register/', register_view, name='register'),
 
+path('Dashboard/', include('Dashboard.urls')),
+
+
 
     prefix_default_language=True
 )
