@@ -5,6 +5,10 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.utils import translation
+import requests
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 
 
 
@@ -13,47 +17,16 @@ def job_list(request):
     return render(request, 'jobs/job_list.html', {'jobs': jobs})
 
 
-
-
-#
-# def post_job(request):
-#     if request.method == "POST":
-#         form = JobForm(request.POST)
-#         if form.is_valid():
-#             job = form.save(commit=False)
-#             if request.user.is_authenticated:
-#                 job.posted_by = request.user
-#             job.save() # Вакансия базага сакталды!
-#
-#             # --- МЫНА УШУЛ ЖЕРГЕ ТЕЛЕГРАМДЫ ЧАКЫРАБЫЗ ---
-#             try:
-#                 # job.company бул сенин Моделиңдеги компаниянын аты жазылган талаа болушу керек
-#                 send_telegram_notification(job.title, job.company)
-#             except:
-#                 pass
-#             # -------------------------------------------
-#
-#             return redirect('job_list')
-#     else:
-#         form = JobForm()
-#     return render(request, 'jobs/post_job.html', {'form': form})
-
-
-@login_required
 def vacancy_list(request):
-    user_language = translation.get_language_from_request(request)
-    translation.activate(user_language)
+    jobs = Job.objects.filter(is_active=True).order_by('-created_at')
+    search_query = request.GET.get('search')
+    category_query = request.GET.get('category')
 
-    active_jobs = Job.objects.filter(is_active=True).order_by('-created_at')
-    query = request.GET.get('search', '').strip()
+    if search_query:
+        jobs = jobs.filter(title__icontains=search_query)
 
-    if query:
-        jobs = active_jobs.filter(
-            Q(title__icontains=query) | Q(company__icontains=query)
-        )
-    else:
-        jobs = active_jobs
-
+    if category_query:
+        jobs = jobs.filter(category=category_query)
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'jobs/job_list_partial.html', {'jobs': jobs})
 
@@ -125,27 +98,42 @@ def delete_job(request, pk):
     return redirect('admin_control')
 
 
-import requests
 
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 def send_telegram_notification(job_title, company_name):
-    token = "8671398522:AAF2pivRcTTAm6Ytl-77EExSFrxheNWZIt4"
-    chat_id = "@eduhub_kg_jobs"
 
-    message = (
-        f"🚀 **НОВАЯ ВАКАНСИЯ!**\n\n"
-        f"📌 Услуга: {job_title}\n"
-        f"🏢 Компания: {company_name}\n\n"
-        f"🔗 [Читать с сайта](http://127.0.0.1:8000/ru/jobs/)"
-    )
+    token = os.getenv('TELEGRAM_BOT_TOKEN')
+    chat_id = os.getenv('TELEGRAM_CHAT_ID')
+
+    if not token or not chat_id:
+        return
+    domain = "baiysh.pythonanywhere.com"
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
 
+    message = (
+        f"🚀 **НОВАЯ ВАКАНСИЯ!**\n\n"
+        f"📌 Должность: {job_title}\n"
+        f"🏢 Компания: {company_name}\n\n"
+        f"🔗 [Читать на сайте](https://{domain}/ru/jobs/)"
+    )
+
     try:
-        response = requests.post(url, data={'chat_id': chat_id, 'text': message, 'parse_mode': 'Markdown'}, timeout=10)
-        print(f"TELEGRAM STATUS: {response.status_code}, RESPONSE: {response.text}")
+        payload = {
+            'chat_id': chat_id,
+            'text': message,
+            'parse_mode': 'Markdown',
+            'disable_web_page_preview': False
+        }
+        response = requests.post(url, data=payload, timeout=10)
+
+        if response.status_code != 200:
+            print(f"TELEGRAM ERROR: Status {response.status_code}, {response.text}")
+
     except Exception as e:
-        print(f"TELEGRAM ERROR: {e}")
+        print(f"TELEGRAM CONNECTION ERROR: {e}")
 
 
 def post_job(request):
@@ -156,14 +144,17 @@ def post_job(request):
             if request.user.is_authenticated:
                 job.posted_by = request.user
             job.save()
-            try:
 
+            try:
                 comp = str(job.company) if hasattr(job, 'company') else "Неизвестная компания"
                 send_telegram_notification(job.title, comp)
             except Exception as e:
                 print(f"NOTIFICATION ERROR: {e}")
 
             return redirect('job_list')
+        else:
+            print(form.errors)
     else:
         form = JobForm()
+
     return render(request, 'jobs/post_job.html', {'form': form})

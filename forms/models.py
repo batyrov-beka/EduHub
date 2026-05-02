@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from jobs.models import Job
+from PIL import Image
+
 
 class Resume(models.Model):
     user = models.OneToOneField(
@@ -20,10 +22,33 @@ class Resume(models.Model):
 
     def __str__(self):
         return f"Резюме: {self.full_name}"
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.photo:
+            try:
+                img_path = self.photo.path
+                img = Image.open(img_path)
+                if img.height > 400 or img.width > 400:
+                    output_size = (400, 400)
+                    img.thumbnail(output_size)
+
+                    if img.mode in ("RGBA", "P"):
+                        img = img.convert("RGB")
+
+                    img.save(img_path, quality=85, optimize=True)
+            except Exception as e:
+                print(f"Ошибка обработки изображения: {e}")
 
     class Meta:
         verbose_name = "Резюме"
         verbose_name_plural = "Резюме"
+
+
+
+
+
+
 
 STATUS_CHOICES = (
     ('pending', 'На рассмотрении'),

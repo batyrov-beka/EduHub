@@ -12,6 +12,7 @@ from django.http import HttpResponseForbidden
 from django.conf import settings
 from django.utils.translation import gettext as _
 from django.core.paginator import Paginator
+from django.urls import reverse
 
 
 
@@ -54,30 +55,54 @@ def vacancy_detail(request, id):
     })
 
 
-
 @login_required
 def apply_to_vacancy(request, job_id):
     if request.method == 'POST':
         job = get_object_or_404(Job, id=job_id)
         resume = Resume.objects.filter(user=request.user).first()
 
-
         if not resume or not resume.full_name or resume.full_name.strip() == "":
             messages.error(request, _("Ваше резюме не заполнено! Сначала заполните его."))
-            return redirect('edit_resume')
-
+            return redirect('my_resume')
 
         already_applied = Application.objects.filter(vacancy=job, student=request.user).exists()
         if already_applied:
             messages.warning(request, _("Вы уже подавали заявку на эту вакансию."))
             return redirect('vacancy_detail', id=job_id)
 
-
         Application.objects.create(
             vacancy=job,
             student=request.user,
             resume=resume
         )
+
+
+        employer = job.posted_by
+        if employer.email:
+            full_name = request.user.get_full_name() or request.user.username
+
+            dashboard_path = reverse('employer_dashboard')
+            full_url = f"https://baiysh.pythonanywhere.com{dashboard_path}"
+
+            subject = f"Новый отклик: {job.title}"
+            message = (
+                f"Здравствуйте, {employer.username}!\n\n"
+                f"На вашу вакансию '{job.title}' поступил новый отклик.\n\n"
+                f"👤 Кандидат: {full_name}\n"
+                f"📂 Посмотреть отклики и резюме: {full_url}\n\n"
+                f"С уважением, команда EduHub Jobs"
+            )
+
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [employer.email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Email Error: {e}")
 
         messages.success(request, _("Ваш отклик успешно отправлен!"))
         return redirect('vacancy_detail', id=job_id)
@@ -95,13 +120,46 @@ def update_status(request, pk, status):
     application.status = status
     application.save()
 
-    translations = {
-        'accepted': 'принята',
-        'rejected': 'отклонена',
-        'pending': 'на рассмотрении'
-    }
-    ru_status = translations.get(status, status)
-    messages.success(request, f"Статус заявки успешно изменен на: {ru_status}")
+    student_email = application.student.email
+    if student_email:
+        student_dashboard_path = reverse('student_applications')
+        full_url = f"https://baiysh.pythonanywhere.com{student_dashboard_path}"
+
+        translations = {
+            'accepted': 'Принята',
+            'rejected': 'Отклонена',
+            'pending': 'На рассмотрении'
+        }
+        status_text = translations.get(status, status)
+
+        subject = f"Обновление статуса: {application.vacancy.title}"
+
+        if status == 'accepted':
+            body = f"Поздравляем! Ваша заявка на вакансию '{application.vacancy.title}' принята. Работодатель свяжется с вами."
+        elif status == 'rejected':
+            body = f"К сожалению, ваша заявка на вакансию '{application.vacancy.title}' отклонена."
+        else:
+            body = f"Статус вашей заявки на вакансию '{application.vacancy.title}' изменен на: {status_text}."
+
+        message = (
+            f"Здравствуйте, {application.student.username}!\n\n"
+            f"{body}\n"
+            f"Детали можете посмотреть в своем кабинете: {full_url}\n\n"
+            f"С уважением, EduHub Jobs"
+        )
+
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [student_email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print(f"Error sending email to student: {e}")
+
+    messages.success(request, f"Статус заявки успешно изменен.")
     return redirect('employer_dashboard')
 
 

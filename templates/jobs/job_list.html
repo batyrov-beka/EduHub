@@ -492,12 +492,23 @@
     </div>
 {% endif %}
 
-    <div class="search-container">
+   <div class="search-container">
     <div class="search-section">
-        <form method="GET" action="{% url 'vacancy_list' %}" class="search-row">
+        <form method="GET" action="{% url 'vacancy_list' %}" class="search-row" id="search-form">
+
             <input type="text" name="search" class="search-input"
                    placeholder="{% trans 'Поиск вакансий...' %}"
                    value="{{ request.GET.search|default:'' }}" autocomplete="off">
+
+            <select name="category" class="search-input category-select" style="flex: 0.4; cursor: pointer;">
+            <option value="">{% trans "Все категории" %}</option>
+<option value="it" {% if request.GET.category == 'it' %}selected{% endif %}>{% trans "IT / Программирование" %}</option>
+<option value="marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>{% trans "Маркетинг" %}</option>
+<option value="admin" {% if request.GET.category == 'admin' %}selected{% endif %}>{% trans "Администрация" %}</option>
+<option value="design" {% if request.GET.category == 'design' %}selected{% endif %}>{% trans "Дизайн" %}</option>
+<option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>{% trans "Другие" %}</option>
+            </select>
+
             <button type="submit" class="btn-search">{% trans "Найти" %}</button>
         </form>
     </div>
@@ -511,12 +522,14 @@
 
 
 <script>
-    const searchInput = document.querySelector('.search-input');
+   const searchInput = document.querySelector('.search-input');
+    const categorySelect = document.querySelector('.category-select');
     const jobContainer = document.querySelector('.jobs-grid');
 
     function performSearch() {
         const query = searchInput.value;
-        const url = "{% url 'vacancy_list' %}?search=" + encodeURIComponent(query);
+        const category = categorySelect.value;
+        const url = `{% url 'vacancy_list' %}?search=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
 
         fetch(url, {
             headers: {
@@ -531,6 +544,8 @@
     }
 
     searchInput.addEventListener('input', performSearch);
+
+    categorySelect.addEventListener('change', performSearch);
 </script>
 
 

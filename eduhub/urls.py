@@ -2,6 +2,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+
+import materials
 from users.views import register_view
 from django.conf.urls.i18n import i18n_patterns
 
@@ -20,6 +22,8 @@ urlpatterns += i18n_patterns(
 
 path('Dashboard/', include('Dashboard.urls')),
 
+    path('materials/',include('materials.urls')),
+    path('forum/',include('forum.urls')),
 
 
     prefix_default_language=True

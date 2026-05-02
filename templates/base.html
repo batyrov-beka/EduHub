@@ -298,8 +298,8 @@
         <div class="nav-links">
             <a href="{% url 'home' %}">{% trans "Главная" %}</a>
             <a href="{% url 'vacancy_list' %}">{% trans "Вакансии" %}</a>
-            <a href="#">{% trans "Материалы" %}</a>
-            <a href="#">{% trans "Форум" %}</a>
+            <a href="{% url 'material_list' %}">{% trans "Материалы" %}</a>
+            <a href="{% url 'question_list' %}">{% trans "Форум" %}</a>
         </div>
 
        <div class="user-area">
@@ -370,8 +370,8 @@
     <div class="nav-overlay" id="mobile-menu">
         <a href="{% url 'home' %}">{% trans "Главная" %}</a>
         <a href="{% url 'vacancy_list' %}">{% trans "Вакансии" %}</a>
-        <a href="#">{% trans "Материалы" %}</a>
-        <a href="#">{% trans "Форум" %}</a>
+        <a href="{% url 'material_list' %}">{% trans "Материалы" %}</a>
+        <a href="{% url 'question_list' %}">{% trans "Форум" %}</a>
 
      <div class="language-switcher">
     <form action="{% url 'set_language' %}" method="post" style="display: flex; gap: 5px; margin: 0;">

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+<main class="article-page">
+    <div class="nav-container">
+        <a href="{% url 'material_list' %}" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            {% trans "Все материалы" %}
+        </a>
+    </div>
+
+    <article class="article-container">
+        <header class="article-header">
+            <div class="meta-top">
+                <span class="category-tag">{% trans "Учебный материал" %}</span>
+                <span class="reading-time">⏱️ {% trans "5 мин. чтения" %}</span>
+            </div>
+
+            <h1 class="article-title">{{ material.title }}</h1>
+
+            <div class="author-row">
+                <div class="author-info">
+                    <div class="avatar">EH</div>
+                    <div class="details">
+                        <p class="name">EduHub Team</p>
+                        <p class="date">{{ material.created_at|date:"d F, Y" }}</p>
+                    </div>
+                </div>
+
+                {% if user.is_staff %}
+                <div class="admin-actions">
+                    <a href="{% url 'admin:materials_material_change' material.id %}" class="edit-link">
+                        ✏️ {% trans "Редактировать" %}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if material.image %}
+        <figure class="main-image-wrapper">
+            <img src="{{ material.image.url }}" alt="{{ material.title }}" class="main-img">
+        </figure>
+        {% endif %}
+
+        <section class="article-content">
+            {{ material.content|linebreaks }}
+        </section>
+
+        <footer class="article-share-box">
+            <h4 class="share-title">{% trans "Было полезно? Поделитесь:" %}</h4>
+            <div class="share-buttons">
+                <a href="https://wa.me/?text={{ request.build_absolute_uri }}" class="share-btn whatsapp">
+                    <img src="https://img.icons8.com/color/48/whatsapp--v1.png" alt="wa"/> WhatsApp
+                </a>
+            </div>
+        </footer>
+    </article>
+</main>
+
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+    :root {
+         --bg-dark: #161f2c;
+        --accent: #58a6ff;
+        --text-bright: #ffffff;
+        --text-dim: #8b949e;
+        --border: #30363d;
+        --card-bg: #161b22;
+    }
+
+    .article-page {
+      background-color: var(--bg-dark);
+        min-height: 100vh;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        color: #d1d5db;
+        padding: 40px 20px 100px;
+    }
+
+    .nav-container, .article-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 15px;
+        margin-bottom: 40px;
+        transition: 0.2s;
+    }
+    .back-btn:hover { transform: translateX(-5px); opacity: 0.8; }
+
+    .meta-top {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .category-tag {
+        background: rgba(88, 166, 255, 0.15);
+        color: var(--accent);
+        padding: 6px 14px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .reading-time { font-size: 13px; color: var(--text-dim); }
+
+    .article-title {
+        font-size: 44px;
+        font-weight: 800;
+        line-height: 1.15;
+        color: var(--text-bright);
+        margin-bottom: 30px;
+        letter-spacing: -1px;
+    }
+
+    .author-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid var(--border);
+    }
+    .author-info { display: flex; align-items: center; gap: 15px; }
+    .avatar {
+        width: 45px; height: 45px;
+        background: linear-gradient(135deg, #388bef, #32d184);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 800; font-size: 14px;
+    }
+    .name { color: var(--text-bright); font-weight: 700; margin: 0; }
+    .date { color: var(--text-dim); font-size: 13px; margin: 0; }
+
+    .edit-link {
+        color: #e3b341;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid rgba(227, 179, 65, 0.3);
+        padding: 8px 16px;
+        border-radius: 10px;
+        transition: 0.3s;
+    }
+    .edit-link:hover { background: rgba(227, 179, 65, 0.1); border-color: #e3b341; }
+
+    .main-image-wrapper {
+        margin: 0 0 50px 0;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .main-img { width: 100%; height: auto; display: block; }
+
+    .article-content {
+        font-size: 20px;
+        line-height: 1.8;
+        color: #d1d5db;
+    }
+
+    .article-share-box {
+        margin-top: 60px;
+        padding: 40px;
+        background: var(--card-bg);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        text-align: center;
+    }
+    .share-title { color: var(--text-bright); margin-bottom: 20px; }
+    .share-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #238636;
+        color: white;
+        padding: 5px 18px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+    .share-btn:hover { background: #2ea043; transform: translateY(-3px); }
+
+    @media (max-width: 768px) {
+        .article-title { font-size: 30px; }
+        .article-content { font-size: 18px; }
+        .author-row { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .main-image-wrapper { border-radius: 16px; margin-bottom: 30px; }
+    }
+</style>
+{% endblock %}

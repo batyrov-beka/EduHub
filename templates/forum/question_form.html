@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="ask-page">
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="ask-container">
+        <div class="ask-header">
+            <div class="header-content">
+                <h1 class="ask-title">💡 {% trans "Задать вопрос сообществу" %}</h1>
+                <p class="ask-subtitle">
+                    {% trans "Поделитесь своей проблемой с экспертным сообществом EduHub и получите ответ от опытных пользователей" %}
+                </p>
+            </div>
+            <div class="header-decoration"></div>
+        </div>
+
+        <div class="ask-form-wrapper">
+            <form method="POST" class="ask-form">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        <span class="label-text">{{ field.label }}</span>
+                        {% if field.field.required %}
+                            <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    <div class="input-wrapper">
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="help-text">ℹ️ {{ field.help_text|safe }}</small>
+                        {% endif %}
+                    </div>
+
+                    {% if field.errors %}
+                        <div class="error-msg">
+                            <span class="error-icon">⚠️</span>
+                            <span class="error-text">{{ field.errors|join:", " }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <span class="btn-icon">✨</span>
+                        <span class="btn-text">{% trans "Опубликовать вопрос" %}</span>
+                    </button>
+                    <a href="{% url 'question_list' %}" class="btn-cancel">{% trans "Отмена" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: #334155;
+        --card-bg: #1e293b;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --border-hover: rgba(56, 189, 248, 0.3);
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --accent-primary: #38bdf8;
+        --accent-hover: #0ea5e9;
+        --success: #10b981;
+        --success-hover: #059669;
+        --error: #ef4444;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .ask-page {
+        position: relative;
+        min-height: 100vh;
+        padding: 80px 20px 60px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        overflow: hidden;
+    }
+
+    .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .orb-1 {
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, #38bdf8, transparent);
+        top: -200px; left: -200px;
+    }
+
+    .orb-2 {
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, #10b981, transparent);
+        bottom: -150px; right: -150px;
+        animation-delay: 7s;
+    }
+
+    .orb-3 {
+        width: 350px; height: 350px;
+        background: radial-gradient(circle, #8b5cf6, transparent);
+        top: 50%; right: -175px;
+        animation-delay: 14s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(30px, 30px) scale(1.1); }
+    }
+
+    .ask-container {
+        max-width: 750px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .ask-header { text-align: center; margin-bottom: 50px; position: relative; }
+
+    .ask-title {
+        font-size: 42px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 16px;
+        letter-spacing: -1px;
+        animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ask-subtitle {
+        font-size: 16px;
+        color: var(--text-muted);
+        max-width: 500px;
+        margin: 0 auto;
+        line-height: 1.6;
+        animation: slideDown 0.6s ease-out 0.1s both;
+    }
+
+    .header-decoration {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+        border-radius: 2px;
+    }
+
+    .ask-form-wrapper {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: var(--shadow-lg);
+        animation: slideUp 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ask-form { display: flex; flex-direction: column; gap: 30px; }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        animation: fadeIn 0.5s ease-out forwards;
+        opacity: 0;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.2s; }
+    .form-group:nth-child(2) { animation-delay: 0.3s; }
+    .form-group:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .form-label {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 14px; font-weight: 600;
+        color: var(--text-primary);
+        text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .required-mark { color: var(--error); font-weight: 700; }
+
+    .ask-form input, .ask-form textarea, .ask-form select {
+        width: 100%;
+        padding: 14px 18px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 15px;
+        transition: all 0.3s ease;
+        resize: vertical;
+    }
+
+    .ask-form textarea { min-height: 140px; }
+
+    .ask-form input:focus, .ask-form textarea:focus {
+        border-color: var(--accent-primary);
+        background: rgba(15, 23, 42, 0.8);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .help-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .error-msg {
+        display: flex; align-items: flex-start; gap: 8px;
+        padding: 10px 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        animation: shake 0.4s ease-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .error-text { color: var(--error); font-size: 12px; }
+
+    .form-actions {
+        display: flex; align-items: center; gap: 16px;
+        margin-top: 20px; padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-submit {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white; border: none; border-radius: 12px;
+        font-weight: 700; cursor: pointer; transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        padding: 14px 28px; color: var(--text-muted);
+        text-decoration: none; font-weight: 600;
+        border-radius: 12px; transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.05); }
+
+    @media (max-width: 900px) {
+        .ask-title { font-size: 32px; }
+        .ask-form-wrapper { padding: 30px; }
+    }
+
+    @media (max-width: 640px) {
+        .ask-title { font-size: 26px; }
+        .ask-form-wrapper { padding: 20px; }
+        .form-actions { flex-direction: column; }
+        .btn-submit, .btn-cancel { width: 100%; }
+        .btn-cancel { order: 2; }
+        .orb-1, .orb-2, .orb-3 { opacity: 0.05; }
+    }
+
+    .ask-form textarea::-webkit-scrollbar { width: 6px; }
+    .ask-form textarea::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 10px; }
+</style>
+{% endblock %}
