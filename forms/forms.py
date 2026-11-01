@@ -1,55 +1,40 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from users.models import CustomUser
+from django.utils.translation import gettext_lazy as _
+
 from .models import Resume
 
-
-class SignUpForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
-        model = CustomUser
-        fields = ("username", "email", "role", "university", "phone")
 
 class ResumeForm(forms.ModelForm):
     class Meta:
         model = Resume
-        fields = ['full_name', 'photo', 'phone', 'education', 'experience', 'skills', 'about_me', 'github_link']
-
+        fields = ['full_name', 'photo', 'phone', 'github_link', 'education', 'experience', 'skills', 'about_me']
         widgets = {
-            'full_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ваше ФИО'
-            }),
-            'phone': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': '+996 ...'
-            }),
-            'github_link': forms.URLInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'https://github.com/username'
-            }),
-            'education': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Место обучения (ВУЗ, курсы)...'
-            }),
-            'experience': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Ваш опыт работы или проекты...'
-            }),
-            'skills': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 2,
-                'placeholder': 'Python, Django, SQL и др.'
-            }),
-            'about_me': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 3,
-                'placeholder': 'Кратко о себе...'
-            }),
-
-            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+            'full_name': forms.TextInput(attrs={'placeholder': _('Ваше ФИО')}),
+            'phone': forms.TextInput(attrs={'placeholder': '+996 ...', 'type': 'tel'}),
+            'github_link': forms.URLInput(attrs={'placeholder': 'https://github.com/username'}),
+            'education': forms.Textarea(attrs={'rows': 3, 'placeholder': _('Место обучения (ВУЗ, курсы)...')}),
+            'experience': forms.Textarea(attrs={'rows': 3, 'placeholder': _('Ваш опыт работы или проекты...')}),
+            'skills': forms.Textarea(attrs={'rows': 2, 'placeholder': _('Python, Django, SQL и др.')}),
+            'about_me': forms.Textarea(attrs={'rows': 3, 'placeholder': _('Кратко о себе...')}),
+            'photo': forms.FileInput(attrs={'accept': 'image/*'}),
+        }
+        help_texts = {
+            'skills': _('Перечислите навыки через запятую.'),
         }
 
+    def clean_full_name(self):
+        name = self.cleaned_data.get('full_name', '').strip()
+        if len(name) < 3:
+            raise forms.ValidationError(_("Укажите полное имя."))
+        return name
 
 
+class ApplyForm(forms.Form):
+    cover_letter = forms.CharField(
+        required=False,
+        max_length=2000,
+        widget=forms.Textarea(attrs={
+            'rows': 4,
+            'placeholder': _('Коротко расскажите, почему вы подходите на эту вакансию (необязательно)'),
+        }),
+    )

@@ -1,300 +1,115 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n eduhub_extras %}
+{% block title %}{{ vacancy.title }}{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="page">
+    <div class="container">
+        <a href="{% url 'vacancy_list' %}" class="back-link"><i class="bi bi-arrow-left"></i>{% trans "Все вакансии" %}</a>
 
-<style>
-    body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
-
-    .messages-container {
-        max-width: 900px;
-        margin: 20px auto 0;
-        padding: 0 20px;
-    }
-
-    .alert {
-        padding: 16px 20px;
-        border-radius: 12px;
-        margin-bottom: 15px;
-        color: white;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        animation: slideDown 0.4s ease;
-    }
-
-    .alert-success { background: #10b981; border-left: 5px solid #059669; }
-    .alert-error, .alert-danger { background: #ef4444; border-left: 5px solid #dc2626; }
-    .alert-warning { background: #f59e0b; border-left: 5px solid #d97706; }
-    .alert-info { background: #3b82f6; border-left: 5px solid #2563eb; }
-
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .vacancy-container {
-        max-width: 900px;
-        margin: 30px auto 50px;
-        padding: 0 20px;
-    }
-
-    .vacancy-card {
-        background: #1e293b;
-        border-radius: 20px;
-        border: 1px solid #334155;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .job-header { border-bottom: 1px solid #334155; padding-bottom: 25px; margin-bottom: 30px; }
-
-    .job-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: #f8fafc;
-        margin-bottom: 10px;
-    }
-
-    .job-salary {
-        font-size: 1.5rem;
-        color: #38bdf8;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .meta-info {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 15px;
-        color: #94a3b8;
-    }
-
-    .meta-item { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
-    .meta-item i { color: #38bdf8; }
-
-    .section-title {
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #64748b;
-        margin-bottom: 15px;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .job-description {
-        line-height: 1.8;
-        color: #cbd5e1;
-        font-size: 1.1rem;
-        white-space: pre-line;
-        background: #0f172a;
-        padding: 20px;
-        border-radius: 12px;
-        border-left: 4px solid #38bdf8;
-    }
-
-    .btn-main {
-        background: #38bdf8;
-        color: #0f172a;
-        font-weight: 700;
-        border: none;
-        border-radius: 12px;
-        padding: 16px 32px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        text-transform: uppercase;
-        text-decoration: none;
-    }
-
-    .btn-main:hover {
-        background: #0ea5e9;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
-    }
-
-    #resume-block {
-        display: none;
-        margin-top: 30px;
-        padding: 25px;
-        background: #0f172a;
-        border-radius: 15px;
-        border: 1px solid #38bdf8;
-        animation: fadeIn 0.4s ease;
-    }
-
-    .resume-card {
-        display: flex;
-        align-items: center;
-        padding: 15px;
-        margin-bottom: 12px;
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: 0.2s;
-        color: white;
-    }
-
-    .resume-card:hover { border-color: #38bdf8; background: #26334d; }
-    .resume-card input { width: 18px; height: 18px; margin-right: 15px; accent-color: #38bdf8; }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 600px) {
-        .job-title { font-size: 1.6rem; }
-        .vacancy-card { padding: 25px; }
-    }
-</style>
-
-<div class="messages-container">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <span><i class="fas fa-info-circle me-2"></i> {{ message }}</span>
-                <i class="fas fa-times" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
-
-<div class="vacancy-container">
-    <div class="vacancy-card">
-        <div class="job-header">
-            <h1 class="job-title">{{ vacancy.title }}</h1>
-            <div class="job-salary">
-                <i class="fas fa-wallet"></i> {{ vacancy.salary }} {% trans "сом" %}
-            </div>
-            <div style="padding-top: 15px; color: #cbd5e1;">
-                <i class="fa-solid fa-phone" style="color:#38bdf8;"></i> {{ vacancy.phone }}
-            </div>
-            <div class="meta-info">
-                <div class="meta-item">
-                    <i class="fas fa-map-marker-alt"></i> {{ vacancy.location }}
+        <div class="layout-sidebar">
+            <article class="panel">
+                <div class="vacancy-head">
+                    <div class="logo-tile c{{ vacancy.company|color_index }}">{{ vacancy.company|initials }}</div>
+                    <div>
+                        <h1 style="margin-bottom: 6px;">{{ vacancy.title }}</h1>
+                        <div class="job-meta" style="margin: 0;">
+                            <span><i class="bi bi-building"></i>{{ vacancy.company }}</span>
+                            <span><i class="bi bi-geo-alt"></i>{{ vacancy.location }}</span>
+                            <span><i class="bi bi-clock"></i>{{ vacancy.created_at|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="meta-item">
-                    <i class="fas fa-building"></i> {{ vacancy.employer.username }}
+
+                {% if not vacancy.is_active %}
+                    <div class="alert alert-warning" style="margin-top: 18px;"><i class="bi bi-lock"></i>{% trans "Вакансия закрыта и не принимает отклики." %}</div>
+                {% endif %}
+
+                <div class="facts">
+                    <div class="fact"><span>{% trans "Зарплата" %}</span><b>{{ vacancy.salary|money }}</b></div>
+                    <div class="fact"><span>{% trans "Тип занятости" %}</span><b>{{ vacancy.get_job_type_display }}</b></div>
+                    <div class="fact"><span>{% trans "Категория" %}</span><b>{{ vacancy.get_category_display }}</b></div>
+                    <div class="fact"><span>{% trans "Откликов" %}</span><b>{{ applications_count }}</b></div>
                 </div>
-                <div class="meta-item">
-                    <i class="fas fa-calendar-alt"></i> {% trans "Опубликовано:" %} {{ vacancy.created_at|date:"d.m.Y" }}
-                </div>
-            </div>
-        </div>
 
-        <div class="job-body">
-            <div class="section-title">
-                <i class="fas fa-align-left"></i> {% trans "Описание вакансии" %}
-            </div>
-            <div class="job-description">
-                {{ vacancy.description }}
-            </div>
-        </div>
+                <h2 style="font-size: 1.2rem;">{% trans "Описание вакансии" %}</h2>
+                <div class="prose">{{ vacancy.description }}</div>
 
-        <div style="margin-top: 40px;">
-            {% if user.role == 'student' %}
-                <button id="apply-btn" class="btn-main" onclick="checkResumeAndShow()">
-                    <i class="fas fa-paper-plane"></i> {% trans "Откликнуться на вакансию" %}
-                </button>
+                {% if is_owner %}
+                    <hr class="divider">
+                    <div class="row">
+                        <a href="{% url 'edit_vacancy' vacancy.id %}" class="btn btn-outline"><i class="bi bi-pencil"></i>{% trans "Редактировать" %}</a>
+                        <a href="{% url 'employer_dashboard' %}?job={{ vacancy.id }}" class="btn btn-primary"><i class="bi bi-inbox"></i>{% trans "Отклики" %} ({{ applications_count }})</a>
+                    </div>
+                {% endif %}
+            </article>
 
-                <div id="resume-block" style="display:none; margin-top: 20px;">
-                    <h4 style="margin-bottom: 20px; font-weight: 600;">{% trans "Выберите ваше резюме:" %}</h4>
+            <aside class="stack sticky">
+                <div class="panel apply-box">
+                    {% if not user.is_authenticated %}
+                        <h3>{% trans "Хотите откликнуться?" %}</h3>
+                        <p class="muted small">{% trans "Войдите как студент, чтобы отправить резюме работодателю." %}</p>
+                        <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn btn-primary btn-block">{% trans "Войти и откликнуться" %}</a>
+                        <a href="{% url 'register' %}" class="btn btn-ghost btn-block" style="margin-top: 6px;">{% trans "Создать аккаунт" %}</a>
 
-                    <form action="{% url 'apply_to_vacancy' vacancy.id %}" method="POST">
-                        {% csrf_token %}
-
-                        {% if user_resumes %}
-                            {% for r in user_resumes %}
-                                <label class="resume-card">
-                                    <input type="radio" name="resume_id" value="{{ r.id }}" required>
-                                    <span>{{ r.full_name }}</span>
-                                </label>
-                            {% endfor %}
-
-                            <button type="submit" class="btn-main" style="width: 100%; margin-top: 15px;">
-                                {% trans "Отправить отклик" %}
-                            </button>
+                    {% elif user.role == 'student' %}
+                        {% if application %}
+                            <h3>{% trans "Вы откликнулись" %}</h3>
+                            <p class="muted small">{{ application.created_at|date:"d.m.Y H:i" }}</p>
+                            <span class="status status-{{ application.status }}">{{ application.get_status_display }}</span>
+                            <a href="{% url 'student_applications' %}" class="btn btn-outline btn-block" style="margin-top: 16px;">{% trans "Мои отклики" %}</a>
+                        {% elif not vacancy.is_active %}
+                            <h3>{% trans "Отклик недоступен" %}</h3>
+                            <p class="muted small">{% trans "Вакансия закрыта и не принимает отклики." %}</p>
+                        {% elif not resume or not resume.is_complete %}
+                            <h3>{% trans "Сначала заполните резюме" %}</h3>
+                            <p class="muted small">{% trans "Работодатель увидит ваше резюме вместе с откликом. Это займёт пару минут." %}</p>
+                            <a href="{% url 'my_resume' %}?next={{ request.path|urlencode }}" class="btn btn-sun btn-block"><i class="bi bi-file-earmark-person"></i>{% trans "Заполнить резюме" %}</a>
                         {% else %}
-                            <p style="color: #fbbf24; margin-bottom: 20px;">{% trans "У вас пока нет активных резюме." %}</p>
-                            <a href="{% url 'edit_resume' %}" class="btn-main" style="background: #fbbf24; color: #000; width: 100%; text-decoration: none;">
-                                <i class="fas fa-plus"></i> {% trans "Создать резюме" %}
-                            </a>
+                            <h3>{% trans "Откликнуться" %}</h3>
+                            <p class="muted small">{% blocktrans with name=resume.full_name %}Резюме: {{ name }}{% endblocktrans %}</p>
+                            <form action="{% url 'apply_to_vacancy' vacancy.id %}" method="post" class="stack">
+                                {% csrf_token %}
+                                <div class="field">
+                                    <label for="{{ apply_form.cover_letter.id_for_label }}">{% trans "Сопроводительное письмо" %}</label>
+                                    {{ apply_form.cover_letter }}
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block btn-lg"><i class="bi bi-send"></i>{% trans "Отправить отклик" %}</button>
+                            </form>
                         {% endif %}
 
-                        <button type="button" onclick="hideForm()" style="background: none; border: none; color: #64748b; width: 100%; margin-top: 15px; cursor: pointer; font-weight: 500;">
-                            {% trans "Отмена" %}
-                        </button>
-                    </form>
+                    {% elif is_owner %}
+                        <h3>{% trans "Ваша вакансия" %}</h3>
+                        <p class="muted small">{% trans "Студенты видят эту страницу и могут откликнуться." %}</p>
+                    {% else %}
+                        <h3>{% trans "Контакты" %}</h3>
+                        <p class="muted small">{% trans "Откликаться могут только студенты." %}</p>
+                    {% endif %}
                 </div>
-            {% endif %}
+
+                <div class="panel panel-tight">
+                    <h3 style="font-size: 1rem;">{% trans "Связаться с работодателем" %}</h3>
+                    <div class="contact-line"><i class="bi bi-building"></i>{{ vacancy.company }}</div>
+                    <div class="contact-line"><i class="bi bi-telephone"></i><a href="tel:{{ vacancy.phone }}">{{ vacancy.phone }}</a></div>
+                    <a class="btn btn-whatsapp btn-block" style="margin-top: 10px;" target="_blank" rel="noopener"
+                       href="https://wa.me/{{ vacancy.whatsapp_phone }}?text={% filter urlencode %}{% blocktrans with title=vacancy.title %}Здравствуйте! Пишу по вакансии «{{ title }}» на сайте EduHub.{% endblocktrans %}{% endfilter %}">
+                        <i class="bi bi-whatsapp"></i>WhatsApp
+                    </a>
+                </div>
+
+                {% if similar %}
+                <div class="panel panel-tight">
+                    <h3 style="font-size: 1rem;">{% trans "Похожие вакансии" %}</h3>
+                    {% for job in similar %}
+                        <a class="mini-job" href="{% url 'vacancy_detail' job.id %}">
+                            <b>{{ job.title }}</b>
+                            <span class="small muted">{{ job.company }} · {{ job.salary|money }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </aside>
         </div>
     </div>
 </div>
-
-<script>
-function checkResumeAndShow() {
-    let hasValidResume = false;
-
-    {% if user_resumes %}
-        {% for r in user_resumes %}
-            {% if r.full_name %}
-                hasValidResume = true;
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-
-    if (!hasValidResume) {
-
-        Swal.fire({
-            title: "{% trans 'Внимание!' %}",
-            text: "{% trans 'Ваш профиль не заполнен. Чтобы откликнуться на вакансию, заполните резюме.' %}",
-            icon: 'warning',
-            background: '#1e293b',
-            color: '#f8fafc',
-            showCancelButton: true,
-            confirmButtonColor: '#38bdf8',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: "{% trans 'Заполнить' %}",
-            cancelButtonText: "{% trans 'Закрыть' %}",
-
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-
-                window.location.href = "{% url 'edit_resume' %}";
-            }
-        });
-        return false;
-    } else {
-
-        document.getElementById('apply-btn').style.display = 'none';
-        document.getElementById('resume-block').style.display = 'block';
-    }
-}
-setTimeout(function() {
-    let alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        alert.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-        alert.style.opacity = "0";
-        alert.style.transform = "translateY(-10px)";
-        setTimeout(() => alert.remove(), 600);
-    });
-}, 5000);
-</script>
-
 {% endblock %}

@@ -1,0 +1,14 @@
+# Сырдуу маалыматтар — GitHub'га жүктөлбөйт
+.env
+db.sqlite3
+media/
+staticfiles/
+
+# Python / IDE
+env/
+venv/
+.venv/
+__pycache__/
+*.pyc
+.idea/
+.vscode/

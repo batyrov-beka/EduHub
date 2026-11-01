@@ -1,0 +1,20 @@
+{% load i18n %}
+{% for u in people %}
+    <tr>
+        <td><div class="person"><span class="avatar">{{ u.username|slice:':1'|upper }}</span><div><b>{{ u.display_name }}</b><small>{{ u.email }}</small></div></div></td>
+        <td>{% if u.role == 'student' %}{{ u.university|default:'—' }}{% else %}{{ u.verification_data|default:'—' }}{% endif %}</td>
+        <td class="muted">{{ u.date_joined|date:"d.m.Y" }}</td>
+        <td>{% if u.is_blocked %}<span class="status status-rejected">{% trans "Заблокирован" %}</span>{% elif not u.is_active %}<span class="status status-closed">{% trans "Не подтвердил почту" %}</span>{% else %}<span class="status status-accepted">{% trans "Активен" %}</span>{% endif %}</td>
+        <td><div class="actions">
+            {% if u.role == 'student' and u.resume and u.resume.full_name %}<a href="{% url 'view_student_resume' u.resume.id %}" class="btn btn-outline btn-sm">{% trans "Резюме" %}</a>{% endif %}
+            <form action="{% url 'toggle_user_block' u.id %}" method="post" class="inline-form">{% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn-outline btn-sm">{% if u.is_blocked %}{% trans "Разблокировать" %}{% else %}{% trans "Заблокировать" %}{% endif %}</button></form>
+            <form action="{% url 'delete_user' u.id %}" method="post" class="inline-form" data-confirm="{% trans 'Удалить пользователя безвозвратно?' %}">{% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button></form>
+        </div></td>
+    </tr>
+{% empty %}
+    <tr><td colspan="5"><div class="empty">{% trans "Пользователей нет" %}</div></td></tr>
+{% endfor %}

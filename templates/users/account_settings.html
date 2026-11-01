@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Настройки профиля" %}{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div class="container container-narrow">
+        <div class="page-head">
+            <div><h1>{% trans "Настройки профиля" %}</h1><p>{{ user.username }} · {{ user.get_role_display|default:_("Администратор") }}</p></div>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="panel" novalidate>
+            {% csrf_token %}
+            <div class="form-grid">
+                {% include 'partials/field.html' with field=form.first_name %}
+                {% include 'partials/field.html' with field=form.last_name %}
+                {% include 'partials/field.html' with field=form.email %}
+                {% include 'partials/field.html' with field=form.phone %}
+                {% if user.role != 'employer' %}{% include 'partials/field.html' with field=form.university cls='full' %}{% endif %}
+                {% include 'partials/field.html' with field=form.profile_picture cls='full' %}
+            </div>
+            <hr class="divider">
+            <div class="row-between">
+                <a href="{% url 'custom_reset_form' %}" class="btn btn-ghost"><i class="bi bi-key"></i>{% trans "Сменить пароль" %}</a>
+                <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

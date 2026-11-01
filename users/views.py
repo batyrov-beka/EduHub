@@ -1,212 +1,249 @@
-import random
-from datetime import datetime, timedelta
-from django.shortcuts import render, redirect ,get_object_or_404
-from django.contrib import messages
-from django.core.mail import send_mail
+import logging
+import secrets
+from datetime import timedelta
+
 from django.conf import settings
-from django.contrib.auth import get_user_model, login
-from jobs.models import Job
-from .forms import SignUpForm
-from django.utils.translation import gettext as _
-from .models import EmailOTP, User
+from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
-CustomUser = get_user_model()
-from django.contrib.auth import authenticate, login
+from django.core.mail import send_mail
+from django.db.models import Count
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.translation import gettext as _
+
+from forms.models import Application
+from jobs.models import Job
+from materials.models import Material
+
+from .forms import ProfileForm, SignUpForm
+from .models import EmailOTP
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
+def generate_otp():
+    """Криптографиялык жактан коопсуз 6 орундуу код."""
+    return f"{secrets.randbelow(900000) + 100000}"
+
+
+def otp_expired(created_at):
+    return timezone.now() - created_at > timedelta(minutes=settings.OTP_LIFETIME_MINUTES)
+
+
+def safe_send_mail(subject, message, recipient):
+    """Кат жөнөтүү. Ката болсо сайт кулабайт, логго жазылат."""
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient], fail_silently=False)
+        return True
+    except Exception as exc:  # SMTP ката, интернет жок ж.б.
+        logger.warning("Email error (%s): %s", recipient, exc)
+        return False
+
+
+# ---------------------------------------------------------------- Башкы бет
 
 def home(request):
-    latest_jobs = Job.objects.all().order_by('-created_at')
-    return render(request, 'home.html', {'jobs': latest_jobs})
+    active_jobs = Job.objects.filter(is_active=True)
+    context = {
+        'latest_jobs': active_jobs.select_related('posted_by').order_by('-created_at')[:6],
+        'latest_materials': Material.objects.order_by('-created_at')[:3],
+        'stats': {
+            'jobs': active_jobs.count(),
+            'companies': active_jobs.values('company').distinct().count(),
+            'students': User.objects.filter(role='student').count(),
+            'applications': Application.objects.count(),
+        },
+        'categories': [
+            {'key': row['category'], 'label': dict(Job.CATEGORY_CHOICES).get(row['category'], row['category']),
+             'total': row['total']}
+            for row in active_jobs.values('category').annotate(total=Count('id')).order_by('-total')
+        ],
+    }
+    return render(request, 'home.html', context)
 
+
+# ---------------------------------------------------------------- Кирүү
 
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        # Email менен да кирүүгө болот
+        if '@' in username:
+            found = User.objects.filter(email__iexact=username).first()
+            if found:
+                username = found.username
 
         user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            if hasattr(user, 'is_blocked') and user.is_blocked:
-                messages.error(request, _("Ваш профиль заблокирован администратором!"))
-                return render(request, 'registration/login.html')
-
+        if user is None:
+            messages.error(request, _("Неверное имя пользователя или пароль!"))
+        elif user.is_blocked:
+            messages.error(request, _("Ваш профиль заблокирован администратором!"))
+        else:
             login(request, user)
             messages.success(request, _("Добро пожаловать!"))
-
-            next_url = request.GET.get('next', 'home')
-            return redirect(next_url)
-        else:
-            messages.error(request, _("Неверное имя пользователя или пароль!"))
+            next_url = request.GET.get('next') or request.POST.get('next')
+            if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+                return redirect(next_url)
+            return redirect('home')
 
     return render(request, 'registration/login.html')
 
 
+# ---------------------------------------------------------------- Каттоо
+
+def send_registration_otp(user):
+    otp = generate_otp()
+    EmailOTP.objects.update_or_create(user=user, defaults={'otp_code': otp, 'created_at': timezone.now()})
+    if settings.DEBUG:
+        print(f"[EduHub] OTP for {user.email}: {otp}")
+    return safe_send_mail(
+        _('EduHub - Проверочный код'),
+        _('Ваш код подтверждения: %(code)s') % {'code': otp},
+        user.email,
+    )
+
+
 def register_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+
     if request.method == "POST":
         form = SignUpForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data.get('email')
-
-            if User.objects.filter(email=email).exists():
-                form.add_error('email', _("Этот адрес электронной почты уже зарегистрирован!"))
-                return render(request, 'registration/register.html', {'form': form})
-
             user = form.save(commit=False)
             user.is_active = False
             user.is_verified = False
             user.save()
 
-            send_otp(user)
+            sent = send_registration_otp(user)
             request.session['temp_user_id'] = user.id
-
-            messages.info(request, _("На ваш электронный адрес отправлен код подтверждения."))
+            if sent:
+                messages.info(request, _("На ваш электронный адрес отправлен код подтверждения."))
+            else:
+                messages.warning(request, _("Не удалось отправить письмо. Попробуйте отправить код ещё раз."))
             return redirect('verify_otp')
     else:
-        form = SignUpForm()
+        form = SignUpForm(initial={'role': request.GET.get('role', 'student')})
     return render(request, 'registration/register.html', {'form': form})
-
-
-def send_otp(user):
-    otp = str(random.randint(100000, 999999))
-    from .models import EmailOTP
-    EmailOTP.objects.update_or_create(user=user, defaults={'otp_code': otp})
-
-    subject = 'EduHub - Проверочный код'
-    message = f'Ваш код подтверждения: {otp}'
-
-    print(f"Почта отправляется: {user.email} | Код: {otp}")
-
-    send_mail(
-        subject,
-        message,
-        settings.EMAIL_HOST_USER,
-        [user.email],
-        fail_silently=False
-    )
 
 
 def verify_otp(request):
     user_id = request.session.get('temp_user_id')
-    if not user_id: return redirect('register')
+    user = User.objects.filter(id=user_id).first() if user_id else None
+    if not user:
+        return redirect('register')
 
     if request.method == 'POST':
-        entered_code = request.POST.get('otp')
-        try:
-            user = User.objects.get(id=user_id)
-            user_otp = EmailOTP.objects.get(user=user)
+        entered_code = request.POST.get('otp', '').strip()
+        user_otp = EmailOTP.objects.filter(user=user).first()
 
-            if user_otp.otp_code == entered_code:
-                user.is_active = True
-                role_name = str(user.role).lower()
+        if not user_otp:
+            messages.error(request, _("Код не найден. Отправьте код ещё раз."))
+        elif otp_expired(user_otp.created_at):
+            messages.error(request, _("Срок действия кода истёк. Отправьте код ещё раз."))
+        elif user_otp.otp_code != entered_code:
+            messages.error(request, _("Неверный код!"))
+        else:
+            user.is_active = True
+            # Студент дароо активдешет, иш берүүчүнү админ текшерет
+            user.is_verified = user.role == 'student'
+            user.save()
+            user_otp.delete()
+            request.session.pop('temp_user_id', None)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
-                if 'студент' in role_name or 'student' in role_name:
-                    user.is_verified = True
-                    msg = _("Регистрация успешно завершена!")
-                    target_url = 'home'
-                else:
-                    user.is_verified = False
-                    msg = _("Ваша заявка принята! Пожалуйста, дождитесь одобрения администратора.")
-                    target_url = 'waiting_approval'
+            if user.is_verified:
+                messages.success(request, _("Регистрация успешно завершена!"))
+                return redirect('home')
+            messages.success(request, _("Ваша заявка принята! Пожалуйста, дождитесь одобрения администратора."))
+            return redirect('waiting_approval')
 
-                user.save()
-                user_otp.delete()
-                login(request, user)
-
-                if 'temp_user_id' in request.session:
-                    del request.session['temp_user_id']
-
-                messages.success(request, msg)
-                return redirect(target_url)
-            else:
-                messages.error(request, _("Неверный код!"))
-        except Exception as e:
-            return redirect('register')
-
-    return render(request, 'registration/verify_email.html')
-
-def home(request):
-    context = {}
-    if request.user.is_authenticated and request.user.is_superuser:
-        context['total_students'] = CustomUser.objects.filter(role='student').count()
-        context['total_employers'] = CustomUser.objects.filter(role='employer').count()
-        context['pending_users'] = CustomUser.objects.filter(is_verified=False).exclude(is_superuser=True)
-
-    return render(request, 'home.html', context)
+    return render(request, 'registration/verify_email.html', {'email': user.email})
 
 
-
-def resend__otp(request):
+def resend_registration_otp(request):
     user_id = request.session.get('temp_user_id')
+    user = User.objects.filter(id=user_id).first() if user_id else None
+    if not user:
+        messages.error(request, _("Срок действия сессии истек, пожалуйста, попробуйте снова."))
+        return redirect('register')
 
-    if user_id:
-        try:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            user = User.objects.get(id=user_id)
+    if send_registration_otp(user):
+        messages.success(request, _("На ваш электронный адрес отправлен новый код."))
+    else:
+        messages.error(request, _("Не удалось отправить письмо. Попробуйте позже."))
+    return redirect('verify_otp')
 
-            send_otp(user)
 
-            messages.success(request, "На ваш электронный адрес отправлен новый код.!")
-            return redirect('verify_otp')
-        except User.DoesNotExist:
-            messages.error(request, "Пользователь не найден.")
-            return redirect('register')
+# ---------------------------------------------------------------- Сырсөздү калыбына келтирүү
 
-    messages.error(request, "Срок действия сессии истек, пожалуйста, попробуйте войти снова..")
-    return redirect('register')
-
+def _start_reset(request, email):
+    otp = generate_otp()
+    request.session['reset_otp'] = otp
+    request.session['reset_email'] = email
+    request.session['otp_time'] = timezone.now().isoformat()
+    request.session['reset_verified'] = False
+    if settings.DEBUG:
+        print(f"[EduHub] Reset code for {email}: {otp}")
+    return safe_send_mail(_('Код подтверждения'), _('Ваш код: %(code)s') % {'code': otp}, email)
 
 
 def password_reset_form(request):
     if request.method == "POST":
         email = request.POST.get('email', '').strip()
-        user = User.objects.filter(email=email).first()
+        user = User.objects.filter(email__iexact=email).first()
         if not user:
-            messages.error(request, '')
-            return render(request, 'password/password_reset_form.html')
-        otp = str(random.randint(100000, 999999))
-        request.session['reset_otp'] = otp
-        request.session['reset_email'] = email
-        request.session['otp_time'] = datetime.now().isoformat()
-
-        send_mail('Код подтверждения', f'Ваш код: {otp}', settings.EMAIL_HOST_USER, [email])
+            messages.error(request, _("Пользователь с такой почтой не найден."))
+            return render(request, 'password/password_reset_form.html', {'email': email})
+        if _start_reset(request, user.email):
+            messages.info(request, _("Код отправлен на %(email)s") % {'email': user.email})
+        else:
+            messages.warning(request, _("Не удалось отправить письмо. Попробуйте позже."))
         return redirect('custom_reset_otp')
 
     return render(request, 'password/password_reset_form.html')
 
 
-
 def password_reset_otp(request):
+    if not request.session.get('reset_email'):
+        return redirect('custom_reset_form')
+
     if request.method == 'POST':
         user_code = request.POST.get('otp_code', '').strip()
         server_code = request.session.get('reset_otp')
+        created = request.session.get('otp_time')
 
-        if user_code and str(user_code) == str(server_code):
+        expired = True
+        if created:
+            expired = otp_expired(timezone.datetime.fromisoformat(created))
+
+        if expired:
+            messages.error(request, _("Срок действия кода истёк. Отправьте код ещё раз."))
+        elif user_code and user_code == server_code:
             request.session['reset_verified'] = True
             return redirect('custom_reset_new')
         else:
-            messages.error(request, '')
+            messages.error(request, _("Неверный код!"))
 
-    return render(request, 'password/password_reset_otp.html')
-
+    return render(request, 'password/password_reset_otp.html', {'email': request.session.get('reset_email')})
 
 
 def resend_otp(request):
     email = request.session.get('reset_email')
-    if email:
-        otp = str(random.randint(100000, 999999))
-        request.session['reset_otp'] = otp
-        request.session['otp_time'] = datetime.now().isoformat()
-        send_mail('Новый код', f'Код: {otp}', settings.EMAIL_HOST_USER, [email])
-        messages.success(request, '')
+    if not email:
+        return redirect('custom_reset_form')
+    if _start_reset(request, email):
+        messages.success(request, _("На ваш электронный адрес отправлен новый код."))
+    else:
+        messages.error(request, _("Не удалось отправить письмо. Попробуйте позже."))
     return redirect('custom_reset_otp')
 
 
@@ -215,18 +252,35 @@ def password_reset_new(request):
         return redirect('custom_reset_otp')
 
     if request.method == 'POST':
-        p1 = request.POST.get('password1', '').strip()
-        p2 = request.POST.get('password2', '').strip()
+        p1 = request.POST.get('password1', '')
+        p2 = request.POST.get('password2', '')
 
-        if p1 == p2 and len(p1) >= 8:
-            user = User.objects.get(email=request.session.get('reset_email'))
+        if p1 != p2:
+            messages.error(request, _("Пароли не совпадают."))
+        elif len(p1) < 8:
+            messages.error(request, _("Пароль должен содержать не менее 8 символов."))
+        else:
+            user = User.objects.get(email__iexact=request.session.get('reset_email'))
             user.set_password(p1)
             user.save()
-            request.session.flush()
-            messages.success(request, '')
+            for key in ('reset_otp', 'reset_email', 'otp_time', 'reset_verified'):
+                request.session.pop(key, None)
+            messages.success(request, _("Пароль успешно изменён. Теперь войдите в аккаунт."))
             return redirect('login')
-        else:
-            messages.error(request, '')
 
     return render(request, 'password/password_reset_new.html')
 
+
+# ---------------------------------------------------------------- Профиль жөндөөлөрү
+
+@login_required
+def account_settings(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Данные профиля сохранены."))
+            return redirect('account_settings')
+    else:
+        form = ProfileForm(instance=request.user)
+    return render(request, 'users/account_settings.html', {'form': form})

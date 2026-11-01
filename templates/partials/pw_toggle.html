@@ -1,0 +1,29 @@
+{% load i18n %}
+<style>
+.pw-wrap { position: relative; display: block; }
+.pw-wrap input { padding-right: 46px !important; width: 100%; }
+.pw-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: #5B6785; cursor: pointer; padding: 8px; font-size: 1.1rem; line-height: 1; }
+.pw-eye:hover { color: #14213D; }
+</style>
+<script>
+(function () {
+    document.querySelectorAll('input[type=password]').forEach(function (input) {
+        if (input.closest('.pw-wrap')) return;
+        var wrap = document.createElement('span');
+        wrap.className = 'pw-wrap';
+        input.parentNode.insertBefore(wrap, input);
+        wrap.appendChild(input);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pw-eye';
+        btn.setAttribute('aria-label', '{% trans "Показать пароль" %}');
+        btn.innerHTML = '<i class="bi bi-eye"></i>';
+        btn.addEventListener('click', function () {
+            var show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.firstChild.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+        wrap.appendChild(btn);
+    });
+})();
+</script>

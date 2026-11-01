@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Уведомления" %}{% endblock %}
+
+{% block content %}
+<div class="page">
+    <div class="container container-narrow">
+        <div class="page-head">
+            <div><h1>{% trans "Уведомления" %}</h1><p>{% trans "Ответы работодателей, отклики и сообщения администратора." %}</p></div>
+        </div>
+        <div class="panel" style="padding: 0; overflow: hidden;">
+            {% for n in notifications %}
+                <div class="notif {% if n.id in unread_ids %}unread{% endif %}">
+                    <span class="ico"><i class="bi {% if n.link %}bi-bell{% else %}bi-megaphone{% endif %}"></i></span>
+                    <div style="flex: 1;">
+                        <div>{{ n.message|linebreaksbr }}</div>
+                        <div class="row small muted" style="margin-top: 4px;">
+                            <span>{{ n.created_at|date:"d.m.Y H:i" }}</span>
+                            {% if n.link %}<a href="{{ n.link }}">{% trans "Открыть" %}</a>{% endif %}
+                        </div>
+                    </div>
+                    {% if n.id in unread_ids %}<span class="tag tag-blue" style="height: fit-content;">{% trans "Новое" %}</span>{% endif %}
+                </div>
+            {% empty %}
+                <div class="empty">
+                    <i class="bi bi-bell"></i>
+                    <h3>{% trans "Уведомлений нет" %}</h3>
+                    <p>{% trans "Здесь появятся ответы на отклики и сообщения администратора." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

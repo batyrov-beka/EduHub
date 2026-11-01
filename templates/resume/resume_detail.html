@@ -1,177 +1,112 @@
 {% extends 'base.html' %}
+{% load i18n eduhub_extras %}
+{% block title %}{% trans "Резюме" %} — {{ resume.full_name }}{% endblock %}
 
 {% block content %}
-<style>
-    body { background-color: #030712; color: #f8fafc; font-family: 'Inter', sans-serif; }
-
-    .resume-wrapper {
-        max-width: 950px;
-        margin: 40px auto;
-        background: #1e293b;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        color: #f1f5f9;
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .resume-top {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 50px;
-        border-bottom: 4px solid #38bdf8;
-    }
-
-    .resume-header-flex {
-        display: flex;
-        align-items: center;
-        gap: 35px;
-    }
-
-    .profile-avatar {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid #38bdf8;
-        box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
-    }
-
-    .no-avatar {
-        width: 150px;
-        height: 150px;
-        border-radius: 50%;
-        background: #334155;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.5rem;
-        color: #94a3b8;
-        border: 4px solid #475569;
-    }
-
-    .resume-name {
-        font-size: 38px;
-        font-weight: 800;
-        letter-spacing: -1px;
-        color: #ffffff;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-    }
-
-    .contact-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 15px;
-        color: #94a3b8;
-    }
-
-    .contact-item i { color: #38bdf8; margin-right: 10px; }
-
-    .resume-body { padding: 50px; display: grid; grid-template-columns: 1fr; gap: 35px; }
-
-    .info-header {
-        font-size: 14px;
-        font-weight: 800;
-        color: #38bdf8;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 15px;
-        display: flex; align-items: center; gap: 10px;
-    }
-
-    .info-header::after { content: ""; flex: 1; height: 1px; background: rgba(56, 189, 248, 0.2); }
-
-    .info-content { font-size: 17px; line-height: 1.8; color: #cbd5e1; white-space: pre-line; }
-
-    .control-panel { text-align: center; margin-bottom: 30px; margin-top: 30px; }
-
-    .btn-custom {
-        padding: 12px 28px;
-        border-radius: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: 0.3s;
-        display: inline-block;
-        margin: 5px;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn-edit { background: #38bdf8; color: #0f172a; }
-    .btn-back { color: white; }
-
-    @media (max-width: 768px) {
-        .resume-header-flex { flex-direction: column; text-align: center; }
-        .contact-grid { justify-items: center; }
-        .resume-name { font-size: 28px; }
-    }
-
-    @media print {
-        .navbar, .footer, .control-panel, .btn-back { display: none !important; }
-        .resume-wrapper { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; }
-    }
-</style>
-
-{% load i18n %}
-<div class="container py-5">
-    <div class="control-panel">
-        {% if user == resume.user %}
-        <a href="{% url 'edit_resume' %}" class="btn-custom btn-edit">
-            <i class="fas fa-edit me-2"></i> {% trans "РЕДАКТИРОВАТЬ" %}
-        </a>
+<div class="page">
+    <div class="container container-narrow" style="max-width: 860px;">
+        {% if is_owner %}
+            <div class="page-head">
+                <div><h1>{% trans "Мое резюме" %}</h1><p>{% trans "Так ваше резюме видит работодатель." %}</p></div>
+                <div class="row">
+                    <button type="button" class="btn btn-outline" onclick="window.print()"><i class="bi bi-printer"></i>{% trans "Печать / PDF" %}</button>
+                    <a href="{% url 'edit_resume' %}" class="btn btn-primary"><i class="bi bi-pencil"></i>{% trans "Редактировать" %}</a>
+                </div>
+            </div>
+        {% else %}
+            <a href="javascript:history.back()" class="back-link"><i class="bi bi-arrow-left"></i>{% trans "Назад" %}</a>
         {% endif %}
 
-        <button onclick="window.print()" class="btn-custom btn-pdf">
-            <i class="fas fa-print me-2"></i> {% trans "ПЕЧАТЬ / PDF" %}
-        </button>
-    </div>
+        <article class="panel cv">
+            <div class="cv-cover"></div>
+            <div class="cv-head">
+                <span class="avatar avatar-lg">
+                    {% if resume.photo %}<img src="{{ resume.photo.url }}" alt="{{ resume.full_name }}">{% else %}{{ resume.full_name|initials }}{% endif %}
+                </span>
+                <div class="cv-title">
+                    <h1>{{ resume.full_name }}</h1>
+                    <p>{% if resume.user.university %}<i class="bi bi-mortarboard"></i> {{ resume.user.university }}{% else %}{% trans "Студент" %}{% endif %}</p>
+                </div>
+            </div>
+            <div class="cv-actions">
+                <a class="btn btn-primary btn-sm" href="mailto:{{ resume.user.email }}"><i class="bi bi-envelope"></i>{% trans "Написать" %}</a>
+                <a class="btn btn-outline btn-sm" href="tel:{{ resume.phone }}"><i class="bi bi-telephone"></i>{% trans "Позвонить" %}</a>
+                <a class="btn btn-whatsapp btn-sm" href="https://wa.me/{{ resume.phone|cut:'+'|cut:' '|cut:'-'|cut:'('|cut:')' }}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i>WhatsApp</a>
+                {% if resume.github_link %}<a class="btn btn-outline btn-sm" href="{{ resume.github_link }}" target="_blank" rel="noopener"><i class="bi bi-github"></i>GitHub</a>{% endif %}
+            </div>
 
-    <div class="resume-wrapper">
-        <div class="resume-top">
-            <div class="resume-header-flex">
-                {% if resume.photo %}
-                    <img src="{{ resume.photo.url }}" alt="Profile" class="profile-avatar">
-                {% else %}
-                    <div class="no-avatar">
-                        <i class="fas fa-user"></i>
+            <div class="cv-body">
+                <div>
+                    {% if resume.about_me %}
+                    <section class="cv-block">
+                        <h2><i class="bi bi-person"></i>{% trans "О себе" %}</h2>
+                        <p>{{ resume.about_me|linebreaksbr }}</p>
+                    </section>
+                    {% endif %}
+                    <section class="cv-block">
+                        <h2><i class="bi bi-briefcase"></i>{% trans "Опыт работы" %}</h2>
+                        <ul class="timeline">
+                        {% for line in resume.experience.splitlines %}{% if line.strip %}<li>{{ line }}</li>{% endif %}{% empty %}<li>—</li>{% endfor %}
+                        </ul>
+                    </section>
+                    <section class="cv-block">
+                        <h2><i class="bi bi-mortarboard"></i>{% trans "Образование" %}</h2>
+                        <ul class="timeline">
+                        {% for line in resume.education.splitlines %}{% if line.strip %}<li>{{ line }}</li>{% endif %}{% empty %}<li>—</li>{% endfor %}
+                        </ul>
+                    </section>
+                </div>
+                <aside class="cv-side">
+                    <div class="cv-card">
+                        <h3>{% trans "Контакты" %}</h3>
+                        <ul class="cv-contact">
+                            <li><i class="bi bi-envelope"></i><a href="mailto:{{ resume.user.email }}">{{ resume.user.email }}</a></li>
+                            <li><i class="bi bi-telephone"></i><a href="tel:{{ resume.phone }}">{{ resume.phone }}</a></li>
+                            {% if resume.github_link %}<li><i class="bi bi-github"></i><a href="{{ resume.github_link }}" target="_blank" rel="noopener">GitHub</a></li>{% endif %}
+                        </ul>
                     </div>
-                {% endif %}
+                    {% if resume.skills_list %}
+                    <div class="cv-card">
+                        <h3>{% trans "Навыки" %}</h3>
+                        <div class="skill-list">{% for s in resume.skills_list %}<span class="tag tag-blue">{{ s }}</span>{% endfor %}</div>
+                    </div>
+                    {% endif %}
+                </aside>
+            </div>
+        </article>
 
-                <div style="flex-grow: 1;">
-                    <h1 class="resume-name">{{ resume.full_name }}</h1>
-                    <div class="contact-grid">
-                        <div class="contact-item"><i class="fas fa-envelope"></i> {{ resume.user.email }}</div>
-                        <div class="contact-item"><i class="fas fa-phone"></i> {{ resume.phone }}</div>
-                        {% if resume.github_link %}
-                        <div class="contact-item"><i class="fab fa-github"></i> <a href="{{ resume.github_link }}" style="color: inherit; text-decoration: none;">{% trans "GitHub Портфолио" %}</a></div>
+        {% if applications %}
+        <div class="panel" style="margin-top: 20px;">
+            <h3>{% trans "Отклики этого кандидата на ваши вакансии" %}</h3>
+            {% for app in applications %}
+                <div class="row-between" style="padding: 12px 0; border-top: 1px solid var(--line);">
+                    <div><b>{{ app.vacancy.title }}</b><div class="small muted">{{ app.created_at|date:"d.m.Y" }}</div></div>
+                    <div class="row">
+                        <span class="status status-{{ app.status }}">{{ app.get_status_display }}</span>
+                        {% if app.status != 'accepted' %}
+                        <form action="{% url 'update_status' app.id 'accepted' %}" method="post" class="inline-form">{% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button class="btn btn-success btn-sm">{% trans "Принять" %}</button></form>
+                        {% endif %}
+                        {% if app.status != 'rejected' %}
+                        <form action="{% url 'update_status' app.id 'rejected' %}" method="post" class="inline-form">{% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button class="btn btn-danger btn-sm">{% trans "Отклонить" %}</button></form>
                         {% endif %}
                     </div>
                 </div>
-            </div>
+            {% endfor %}
         </div>
-
-        <div class="resume-body">
-            <div class="info-section">
-                <div class="info-header"><i class="fas fa-graduation-cap"></i> {% trans "Образование" %}</div>
-                <div class="info-content">{{ resume.education|linebreaks }}</div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-header"><i class="fas fa-briefcase"></i> {% trans "Опыт работы" %}</div>
-                <div class="info-content">{{ resume.experience|linebreaks }}</div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-header"><i class="fas fa-tools"></i> {% trans "Навыки (Skills)" %}</div>
-                <div class="info-content">{{ resume.skills|linebreaks }}</div>
-            </div>
-
-            <div class="info-section">
-                <div class="info-header"><i class="fas fa-user"></i> {% trans "О себе" %}</div>
-                <div class="info-content">{{ resume.about_me|linebreaks }}</div>
-            </div>
-        </div>
-        <a href="javascript:history.back()" class="btn-custom btn-back" style="margin-left: 800px;margin-bottom: 20px">{% trans "⬅️ Назад" %}</a>
+        {% endif %}
     </div>
 </div>
+<style>
+@media print {
+    .site-header, .site-footer, .page-head, .back-link, .messages { display: none !important; }
+    body { background: #fff; }
+    .panel { border: 0; box-shadow: none; }
+    .cv-actions { display: none; }
+    .cv-cover { height: 40px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
 {% endblock %}

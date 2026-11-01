@@ -1,10 +1,7 @@
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.auth.models import User
-import random
-
-from django.conf import settings
 
 
 class CustomUser(AbstractUser):
@@ -29,6 +26,18 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
 
+    @property
+    def is_student(self):
+        return self.role == 'student'
+
+    @property
+    def is_employer(self):
+        return self.role == 'employer'
+
+    @property
+    def display_name(self):
+        return self.get_full_name() or self.username
+
 
 class PasswordResetOTP(models.Model):
 
@@ -51,7 +60,3 @@ class EmailOTP(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.otp_code}"
-
-
-
-

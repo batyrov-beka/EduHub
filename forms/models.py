@@ -1,6 +1,7 @@
-from django.db import models
 from django.conf import settings
-from jobs.models import Job
+from django.db import models
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
 
@@ -10,18 +11,31 @@ class Resume(models.Model):
         on_delete=models.CASCADE,
         related_name='resume'
     )
-    full_name = models.CharField(max_length=255, verbose_name="ФИО")
-    phone = models.CharField(max_length=20, verbose_name="Номер телефона")
-    education = models.TextField(verbose_name="Образование")
-    experience = models.TextField(verbose_name="Опыт работы")
-    skills = models.TextField(verbose_name="Навыки (Skills)")
-    about_me = models.TextField(verbose_name="О себе", blank=True)
-    github_link = models.URLField(verbose_name="Ссылка на GitHub", blank=True, null=True)
+    full_name = models.CharField(max_length=255, verbose_name=_("ФИО"))
+    phone = models.CharField(max_length=20, verbose_name=_("Номер телефона"))
+    education = models.TextField(verbose_name=_("Образование"))
+    experience = models.TextField(verbose_name=_("Опыт работы"))
+    skills = models.TextField(verbose_name=_("Навыки (Skills)"))
+    about_me = models.TextField(verbose_name=_("О себе"), blank=True)
+    github_link = models.URLField(verbose_name=_("Ссылка на GitHub"), blank=True, null=True)
 
-    photo = models.ImageField(upload_to='resumes/photos/', blank=True, null=True, verbose_name="Фото профиля")
+    photo = models.ImageField(upload_to='resumes/photos/', blank=True, null=True, verbose_name=_("Фото профиля"))
 
     def __str__(self):
         return f"Резюме: {self.full_name}"
+
+    def get_absolute_url(self):
+        return reverse('view_student_resume', args=[self.pk])
+
+    @property
+    def is_complete(self):
+        return bool(self.full_name and self.full_name.strip() and self.phone and self.skills)
+
+    @property
+    def skills_list(self):
+        import re
+        return [s.strip() for s in re.split(r'[,;\n]', self.skills or '') if s.strip()]
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
@@ -51,32 +65,34 @@ class Resume(models.Model):
 
 
 STATUS_CHOICES = (
-    ('pending', 'На рассмотрении'),
-    ('accepted', 'Принят'),
-    ('rejected', 'Отклонен'),
+    ('pending', _('На рассмотрении')),
+    ('accepted', _('Принят')),
+    ('rejected', _('Отклонен')),
 )
+
 
 class Application(models.Model):
     vacancy = models.ForeignKey('jobs.Job', on_delete=models.CASCADE, related_name='applications')
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applications')
     resume = models.ForeignKey('Resume', on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending',
-        verbose_name="Статус"
-    )
-    cover_letter = models.TextField(blank=True, null=True, verbose_name="Дополнительное уведомление")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name=_("Статус"))
+    cover_letter = models.TextField(blank=True, null=True, verbose_name=_("Сопроводительное письмо"))
     created_at = models.DateTimeField(auto_now_add=True)
 
-class Meta:
-        unique_together = ('vacancy', 'student')
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['vacancy', 'student'], name='unique_application_per_vacancy'),
+        ]
+        verbose_name = _("Отклик")
+        verbose_name_plural = _("Отклики")
 
-def __str__(self):
+    def __str__(self):
         return f"{self.student.username} -> {self.vacancy.title}"
 
 
 class Notification(models.Model):
+    """Эски модель (колдонулбайт). Билдирүүлөр Dashboard.Notification аркылуу иштейт."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
     is_read = models.BooleanField(default=False)

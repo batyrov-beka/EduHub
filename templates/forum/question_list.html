@@ -1,602 +1,87 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block title %}{% trans "Форум" %}{% endblock %}
 
 {% block content %}
-<div class="forum-page">
-    <div class="animated-background">
-        <div class="bg-orb bg-orb-1"></div>
-        <div class="bg-orb bg-orb-2"></div>
-        <div class="bg-orb bg-orb-3"></div>
-    </div>
-
-    <div class="forum-container">
-        <div class="forum-header">
-            <div class="header-content">
-                <h1 class="forum-title">💬 {% trans "Вопросы сообщества" %}</h1>
-                <p class="forum-subtitle"></p>
+<div class="page">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <h1>{% trans "Форум" %}</h1>
+                <p>{% trans "Задавайте вопросы о карьере, учёбе и работе — отвечают студенты и работодатели." %}</p>
             </div>
-            <a href="{% url 'question_ask' %}" class="ask-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>{% trans "Задать вопрос" %}</span>
-            </a>
+            <a href="{% url 'question_ask' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i>{% trans "Задать вопрос" %}</a>
         </div>
 
-        <div class="questions-list">
-            {% for q in questions %}
-            <div class="question-card" style="animation-delay: {{ forloop.counter|add:0.1 }}s">
-                <div class="card-stats-panel">
-                    <div class="stats-bubble {% if q.answers.count > 0 %}has-answers{% endif %}">
-                        <div class="stat-content">
-                            <span class="stat-number">{{ q.answers.count }}</span>
-                            <span class="stat-label">
-                                {% if q.answers.count == 1 %}
-                                    {% trans "ответ" %}
-                                {% elif q.answers.count < 5 %}
-                                    {% trans "ответа" %}
-                                {% else %}
-                                    {% trans "ответов" %}
-                                {% endif %}
-                            </span>
-                        </div>
-                    </div>
+        <div class="layout-sidebar">
+            <div>
+                <div class="row-between" style="margin-bottom: 14px;">
+                    <nav class="row" style="gap: 6px;">
+                        <a href="?{% if q %}q={{ q|urlencode }}{% endif %}" class="chip {% if not current_filter %}active{% endif %}">{% trans "Все" %}</a>
+                        <a href="?filter=unanswered{% if q %}&q={{ q|urlencode }}{% endif %}" class="chip {% if current_filter == 'unanswered' %}active{% endif %}">{% trans "Без ответа" %}</a>
+                        {% if tag %}<a href="{% url 'question_list' %}" class="chip active">#{{ tag }} &times;</a>{% endif %}
+                    </nav>
+                    <form method="get" class="input-icon" role="search">
+                        <i class="bi bi-search"></i>
+                        <input type="search" name="q" value="{{ q }}" placeholder="{% trans 'Поиск по форуму' %}">
+                    </form>
                 </div>
 
-                <div class="card-main-content">
-                    <h3 class="question-title">
-                        <a href="{% url 'question_detail' q.pk %}" class="question-link">
-                            {{ q.title }}
-                        </a>
-                    </h3>
-
-                    <p class="question-preview">{{ q.content|truncatechars:150 }}</p>
-
-                    <div class="card-footer">
-                        <div class="author-info">
-                            <div class="author-avatar">
-                                <span class="avatar-initial">{{ q.author.username|slice:":1"|upper }}</span>
+                <div class="panel" style="padding: 0; overflow: hidden;">
+                    {% for question in questions %}
+                        <div class="q-row">
+                            <div class="q-count {% if question.answer_count %}answered{% endif %}">
+                                <b>{{ question.answer_count }}</b><span>{% trans "ответов" %}</span>
                             </div>
-                            <div class="author-meta">
-                                <span class="author-name">@{{ q.author.username }}</span>
-                                <span class="separator">•</span>
-                                <span class="post-date" title="{{ q.created_at }}">
-                                    {{ q.created_at|date:"d M, Y" }}
-                                </span>
-
-                                {% if user == q.author %}
-                                    <span class="separator">•</span>
-                                    <a href="{% url 'delete_question' q.pk %}"
-                                       class="delete-link"
-                                       onclick="return confirm('{% trans "Вы уверены?" %}')"
-                                       title="{% trans "Удалить" %}">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        </svg>
-                                        <span class="delete-text">{% trans "Удалить" %}</span>
-                                    </a>
-                                {% endif %}
+                            <div>
+                                <h3><a href="{% url 'question_detail' question.pk %}">{{ question.title }}</a></h3>
+                                <p>{{ question.content|truncatechars:160 }}</p>
+                                <div class="row small muted" style="gap: 8px;">
+                                    {% for t in question.tags.split %}<a href="?tag={{ t|urlencode }}" class="tag">#{{ t }}</a>{% endfor %}
+                                    <span class="person" style="gap: 6px; margin-left: auto;">
+                                        <span class="avatar" style="width: 22px; height: 22px; font-size: .7rem;">{{ question.author.username|slice:':1'|upper }}</span>
+                                        {{ question.author.username }} · {{ question.created_at|date:"d.m.Y" }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-
-                        {% if q.tags %}
-                        <div class="tags-container">
-                            {% for tag in q.tags.split %}
-                                <a href="#" class="tag-badge">#{{ tag }}</a>
-                            {% endfor %}
+                    {% empty %}
+                        <div class="empty">
+                            <i class="bi bi-chat-square-text"></i>
+                            <h3>{% trans "Вопросов пока нет" %}</h3>
+                            <p>{% trans "Будьте первым — задайте вопрос сообществу." %}</p>
+                            <a href="{% url 'question_ask' %}" class="btn btn-primary btn-sm">{% trans "Задать вопрос" %}</a>
                         </div>
-                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% include 'partials/pagination.html' %}
+            </div>
+
+            <aside class="stack">
+                <div class="panel">
+                    <div class="row" style="gap: 28px;">
+                        <div><b style="font-size: 1.5rem;">{{ total_questions }}</b><div class="small muted">{% trans "вопросов" %}</div></div>
+                        <div><b style="font-size: 1.5rem;">{{ total_answers }}</b><div class="small muted">{% trans "ответов" %}</div></div>
                     </div>
                 </div>
-
-                <div class="card-pulse"></div>
-            </div>
-            {% empty %}
-            <div class="empty-state">
-                <div class="empty-icon">💭</div>
-                <h3 class="empty-title">{% trans "Вопросов еще нет" %}</h3>
-                <p class="empty-text">{% trans "Будьте первым, кто задаст интересный вопрос!" %}</p>
-                <a href="{% url 'question_ask' %}" class="empty-btn">
-                    {% trans "Задать первый вопрос" %}
-                </a>
-            </div>
-            {% endfor %}
+                {% if popular_tags %}
+                <div class="panel">
+                    <h3 style="font-size: 1rem;">{% trans "Популярные темы" %}</h3>
+                    <div class="row" style="gap: 6px;">
+                        {% for t, n in popular_tags %}<a href="?tag={{ t|urlencode }}" class="chip">#{{ t }} <span class="count">{{ n }}</span></a>{% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="panel">
+                    <h3 style="font-size: 1rem;">{% trans "Правила форума" %}</h3>
+                    <ul class="small muted" style="padding-left: 18px; margin: 0;">
+                        <li>{% trans "Уважайте собеседников" %}</li>
+                        <li>{% trans "Формулируйте вопрос конкретно" %}</li>
+                        <li>{% trans "Отмечайте лучший ответ" %}</li>
+                    </ul>
+                </div>
+            </aside>
         </div>
     </div>
 </div>
-
-<style>
-    :root {
-        --bg-primary: #0f172a;
-        --bg-secondary: #1e293b;
-        --bg-tertiary: #334155;
-        --card-bg: #1e293b;
-        --border-color: rgba(255, 255, 255, 0.1);
-        --border-hover: rgba(56, 189, 248, 0.3);
-        --text-primary: #f1f5f9;
-        --text-secondary: #cbd5e1;
-        --text-muted: #94a3b8;
-        --accent-blue: #38bdf8;
-        --accent-blue-hover: #0ea5e9;
-        --accent-green: #10b981;
-        --accent-green-hover: #059669;
-        --color-red: #ef4444;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.4);
-    }
-
-    .delete-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--color-red);
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 6px;
-        background: rgba(239, 68, 68, 0.08);
-        transition: all 0.2s ease;
-        cursor: pointer;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .delete-link:hover {
-        background: var(--color-red);
-        color: white;
-        border-color: var(--color-red);
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-    }
-
-    .delete-link svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-    }
-
-    .delete-text {
-        display: inline;
-    }
-
-    .forum-page {
-        position: relative;
-        min-height: 100vh;
-        padding: 80px 20px 60px;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-        overflow: hidden;
-    }
-
-    .animated-background {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .bg-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(100px);
-        opacity: 0.08;
-        animation: float 25s ease-in-out infinite;
-    }
-
-    .bg-orb-1 {
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, #38bdf8, transparent);
-        top: -250px;
-        left: -250px;
-    }
-
-    .bg-orb-2 {
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, #10b981, transparent);
-        bottom: -200px;
-        right: -200px;
-        animation-delay: 8s;
-    }
-
-    .bg-orb-3 {
-        width: 450px;
-        height: 450px;
-        background: radial-gradient(circle, #8b5cf6, transparent);
-        top: 30%;
-        right: -225px;
-        animation-delay: 16s;
-    }
-
-    @keyframes float {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(50px, 50px) scale(1.1); }
-    }
-
-    .forum-container {
-        max-width: 950px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 1;
-    }
-
-    .forum-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 30px;
-        margin-bottom: 50px;
-        flex-wrap: wrap;
-    }
-
-    .header-content {
-        flex: 1;
-        min-width: 300px;
-    }
-
-    .forum-title {
-        font-size: 48px;
-        font-weight: 800;
-        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 12px;
-        letter-spacing: -1px;
-        animation: slideDown 0.6s ease-out;
-    }
-
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .forum-subtitle {
-        font-size: 16px;
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin: 0;
-        animation: slideDown 0.6s ease-out 0.1s both;
-    }
-
-    .ask-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 13px 28px;
-        background: linear-gradient(135deg, var(--accent-green) 0%, #047857 100%);
-        color: white;
-        text-decoration: none;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 15px;
-        letter-spacing: 0.3px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-        white-space: nowrap;
-        animation: slideDown 0.6s ease-out 0.2s both;
-        border: none;
-        cursor: pointer;
-    }
-
-    .ask-btn:hover {
-        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-    }
-
-    .questions-list {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .question-card {
-        position: relative;
-        display: flex;
-        gap: 24px;
-        padding: 24px;
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        animation: slideUp 0.5s ease-out forwards;
-        opacity: 0;
-        overflow: hidden;
-    }
-
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .question-card:hover {
-        border-color: var(--border-hover);
-        background: rgba(30, 41, 59, 0.9);
-        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .card-pulse {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.05) 50%, transparent 100%);
-        opacity: 0;
-        animation: pulse 2s ease-in-out infinite;
-        pointer-events: none;
-    }
-
-    @keyframes pulse {
-        0%, 100% { opacity: 0; }
-        50% { opacity: 1; }
-    }
-
-    .card-stats-panel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex-shrink: 0;
-    }
-
-    .stats-bubble {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        border-radius: 14px;
-        background: rgba(15, 23, 42, 0.6);
-        border: 2px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .stats-bubble.has-answers {
-        border-color: var(--accent-green);
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
-    }
-
-    .stat-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        text-align: center;
-    }
-
-    .stat-number {
-        font-size: 28px;
-        font-weight: 800;
-        color: var(--accent-green);
-        line-height: 1;
-    }
-
-    .stat-label {
-        font-size: 10px;
-        font-weight: 700;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        line-height: 1;
-    }
-
-    .card-main-content {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .question-title {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 700;
-        line-height: 1.4;
-    }
-
-    .question-link {
-        color: var(--accent-blue);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        word-break: break-word;
-    }
-
-    .question-link:hover {
-        color: var(--accent-blue-hover);
-        text-decoration: underline;
-    }
-
-    .question-preview {
-        margin: 0;
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .card-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        padding-top: 12px;
-        border-top: 1px solid var(--border-color);
-        flex-wrap: wrap;
-    }
-
-    .author-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-shrink: 0;
-    }
-
-    .author-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
-        border: 1px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .avatar-initial {
-        font-size: 12px;
-        font-weight: 800;
-        color: var(--accent-blue);
-    }
-
-    .author-meta {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        color: var(--text-muted);
-        flex-wrap: wrap;
-    }
-
-    .author-name {
-        color: var(--text-secondary);
-        font-weight: 600;
-    }
-
-    .separator { opacity: 0.5; }
-
-    .post-date {
-        cursor: help;
-        transition: color 0.3s ease;
-    }
-
-    .post-date:hover { color: var(--accent-blue); }
-
-    .tags-container {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        flex-grow: 1;
-        justify-content: flex-end;
-    }
-
-    .tag-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background: rgba(56, 189, 248, 0.12);
-        color: var(--accent-blue);
-        border: 1px solid rgba(56, 189, 248, 0.2);
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-    }
-
-    .tag-badge:hover {
-        background: rgba(56, 189, 248, 0.25);
-        border-color: rgba(56, 189, 248, 0.4);
-        transform: translateY(-2px);
-    }
-
-    .empty-state {
-        padding: 80px 40px;
-        text-align: center;
-        animation: slideUp 0.6s ease-out;
-    }
-
-    .empty-icon {
-        font-size: 64px;
-        margin-bottom: 20px;
-        animation: bounce 2s ease-in-out infinite;
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-
-    .empty-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 12px;
-    }
-
-    .empty-text {
-        font-size: 15px;
-        color: var(--text-muted);
-        margin-bottom: 30px;
-        line-height: 1.6;
-    }
-
-    .empty-btn {
-        display: inline-block;
-        padding: 12px 28px;
-        background: var(--accent-green);
-        color: white;
-        text-decoration: none;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .empty-btn:hover {
-        background: var(--accent-green-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    }
-
-    @media (max-width: 1024px) {
-        .forum-page { padding: 70px 16px 50px; }
-        .forum-title { font-size: 40px; }
-        .delete-text { display: none; }
-    }
-
-    @media (max-width: 900px) {
-        .forum-header { flex-direction: column; gap: 20px; }
-        .forum-title { font-size: 32px; }
-        .ask-btn { width: 100%; }
-        .question-card { flex-direction: column; }
-        .card-stats-panel { width: 100%; flex-direction: row; order: 2; }
-        .stats-bubble { width: 100%; height: auto; padding: 12px; }
-        .card-main-content { order: 1; }
-        .card-footer { flex-direction: column; align-items: flex-start; border-top: none; }
-        .tags-container { justify-content: flex-start; }
-    }
-
-    @media (max-width: 640px) {
-        .forum-title { font-size: 26px; }
-        .question-card { padding: 14px; }
-        .question-title { font-size: 15px; }
-    }
-
-    @media (max-width: 480px) {
-        .forum-title { font-size: 22px; }
-        .separator { display: none; }
-    }
-
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.4); }
-    ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent-blue-hover); }
-</style>
 {% endblock %}

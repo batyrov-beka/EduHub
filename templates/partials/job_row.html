@@ -1,0 +1,19 @@
+{% load i18n eduhub_extras %}
+<article class="job-row">
+    <div class="logo-tile c{{ job.company|color_index }}">{{ job.company|initials }}</div>
+    <div>
+        <h3><a href="{% url 'vacancy_detail' job.id %}">{{ job.title }}</a></h3>
+        <div class="job-meta">
+            <span><i class="bi bi-building"></i>{{ job.company }}</span>
+            <span><i class="bi bi-geo-alt"></i>{{ job.location }}</span>
+        </div>
+        <div class="job-tags">
+            <span class="tag {% if job.job_type == 'Internship' %}tag-sun{% else %}tag-blue{% endif %}">{{ job.get_job_type_display }}</span>
+            <span class="tag">{{ job.get_category_display }}</span>
+        </div>
+    </div>
+    <div class="job-side">
+        <span class="salary {% if not job.salary %}neg{% endif %}">{{ job.salary|money }}</span>
+        <span class="time">{{ job.created_at|ago }}</span>
+    </div>
+</article>

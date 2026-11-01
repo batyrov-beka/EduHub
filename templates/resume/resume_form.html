@@ -1,219 +1,57 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Редактирование резюме" %}{% endblock %}
 
 {% block content %}
-<style>
-    :root {
-        --primary-blue: #38bdf8;
-        --bg-dark: #0f172a;
-        --card-bg: rgba(30, 41, 59, 0.7);
-    }
-
-
-    .glass-form {
-        background: var(--card-bg);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 40px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        max-width: 850px;
-        margin: 20px auto;
-    }
-
-    .form-title {
-        font-size: clamp(24px, 5vw, 32px);
-        font-weight: 800;
-        background: linear-gradient(to right, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-
-    .input-group {
-        margin-bottom: 20px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .input-group label {
-        display: block;
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-        letter-spacing: 0.5px;
-    }
-
-
-    input[type="text"],
-    input[type="url"],
-    input[type="tel"],
-    textarea {
-        width: 100% !important;
-        background: rgba(15, 23, 42, 0.8) !important;
-        border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 14px !important;
-        padding: 12px 15px !important;
-        color: #fff !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease;
-        box-sizing: border-box;
-        outline: none;
-    }
-
-    input:focus, textarea:focus {
-        border-color: var(--primary-blue) !important;
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-    }
-
-
-    input[type="file"] {
-        width: 100%;
-        background: rgba(15, 23, 42, 0.8);
-        border: 1.5px solid rgba(255, 255, 255, 0.1);
-        color: #94a3b8;
-        padding: 8px;
-        border-radius: 14px;
-        cursor: pointer;
-    }
-
-    .submit-btn {
-        background: #38bdf8;
-        color: #0f172a;
-        padding: 16px;
-        border-radius: 16px;
-        border: none;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        width: 100%;
-        transition: 0.3s ease-in-out;
-        margin-top: 10px;
-        text-transform: uppercase;
-    }
-
-    .submit-btn:hover {
-        background: #0ea5e9;
-        transform: translateY(-2px);
-    }
-
-    .helper-text {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.4);
-        margin-top: 5px;
-    }
-
-
-    @media (max-width: 576px) {
-        .glass-form {
-            padding: 25px 15px;
-            border-radius: 0;
-            margin: 0;
-            border: none;
-            background: transparent;
-            box-shadow: none;
-        }
-
-        .container {
-            padding-left: 0;
-            padding-right: 0;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        input, textarea {
-            font-size: 14px !important;
-            padding: 10px !important;
-        }
-
-        .submit-btn {
-            padding: 14px;
-            border-radius: 12px;
-        }
-    }
-</style>
-
-{% load i18n %}
-<div class="container mt-lg-4 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-10">
-            <div class="glass-form">
-                <div class="text-center">
-                    <h2 class="form-title">{% trans "Редактирование Резюме" %}</h2>
-                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 30px; text-align: center;">
-                        {% trans "Обновите ваше фото и личные данные" %}
-                    </p>
-                </div>
-
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <label>{% trans "Ваше ФИО" %}</label>
-                                {{ form.full_name }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group">
-                                <label>{% trans "Контактный телефон" %}</label>
-                                {{ form.phone }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label><i class="fas fa-camera me-2"></i>{% trans "Фото профиля" %}</label>
-                        {{ form.photo }}
-                        <span class="helper-text">{% trans "Выберите новое фото (PNG/JPG)." %}</span>
-                    </div>
-
-                    <div class="input-group">
-                        <label>{% trans "Ссылка на GitHub / Портфолио" %}</label>
-                        {{ form.github_link }}
-                    </div>
-
-                    <div class="input-group">
-                        <label>{% trans "Образование" %}</label>
-                        {{ form.education }}
-                    </div>
-
-                    <div class="input-group">
-                        <label>{% trans "Опыт работы" %}</label>
-                        {{ form.experience }}
-                    </div>
-
-                    <div class="input-group">
-                        <label>{% trans "Технические навыки (Skills)" %}</label>
-                        {{ form.skills }}
-                    </div>
-
-                    <div class="input-group">
-                        <label>{% trans "О себе" %}</label>
-                        {{ form.about_me }}
-                    </div>
-
-                    <button type="submit" class="submit-btn">
-                        {% trans "Сохранить и обновить" %}
-                    </button>
-
-                    <div style="display: flex; justify-content: center; width: 100%; margin-top: 20px;">
-                        <a href="{% url 'view_resume' %}"
-                           style="color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: 0.3s;"
-                           onmouseover="this.style.color='#fff'"
-                           onmouseout="this.style.color='rgba(255,255,255,0.5)'">
-                            {% trans "Отмена" %}
-                        </a>
-                    </div>
-                </form>
+<div class="page">
+    <div class="container container-narrow">
+        <div class="page-head">
+            <div>
+                <h1>{% if resume and resume.full_name %}{% trans "Редактирование резюме" %}{% else %}{% trans "Создание резюме" %}{% endif %}</h1>
+                <p>{% trans "Резюме прикрепляется к каждому вашему отклику." %}</p>
             </div>
         </div>
+
+        <form method="post" enctype="multipart/form-data" class="panel" novalidate>
+            {% csrf_token %}
+            <div class="form-grid">
+                {% include 'partials/field.html' with field=form.full_name %}
+                {% include 'partials/field.html' with field=form.phone %}
+                <div class="field full {% if form.photo.errors %}has-error{% endif %}">
+                    <label for="{{ form.photo.id_for_label }}">{{ form.photo.label }}</label>
+                    <div class="row">
+                        <span class="avatar avatar-md" id="photoPreview">
+                            {% if resume.photo %}<img src="{{ resume.photo.url }}" alt="">{% else %}<i class="bi bi-camera"></i>{% endif %}
+                        </span>
+                        {{ form.photo }}
+                    </div>
+                    {% for e in form.photo.errors %}<div class="error">{{ e }}</div>{% endfor %}
+                </div>
+                {% include 'partials/field.html' with field=form.github_link cls='full' %}
+                {% include 'partials/field.html' with field=form.skills cls='full' %}
+                {% include 'partials/field.html' with field=form.education cls='full' %}
+                {% include 'partials/field.html' with field=form.experience cls='full' %}
+                {% include 'partials/field.html' with field=form.about_me cls='full' %}
+            </div>
+            <hr class="divider">
+            <div class="row-between">
+                <a href="{% if resume and resume.full_name %}{% url 'view_resume' %}{% else %}{% url 'student_applications' %}{% endif %}" class="btn btn-ghost">{% trans "Отмена" %}</a>
+                <button type="submit" class="btn btn-primary btn-lg">{% trans "Сохранить резюме" %}</button>
+            </div>
+        </form>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('{{ form.photo.id_for_label }}').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    const box = document.getElementById('photoPreview');
+    box.innerHTML = ''; box.appendChild(img);
+});
+</script>
 {% endblock %}

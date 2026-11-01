@@ -1,160 +1,201 @@
-from django.shortcuts import render,redirect,get_object_or_404
-from .models import Job
-from .forms import JobForm
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.utils import translation
+import logging
+
 import requests
-import os
-from pathlib import Path
-from dotenv import load_dotenv
+from django.conf import settings
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
+
+from users.decorators import employer_required
+
+from .forms import JobFilterForm, JobForm
+from .models import Job
+
+logger = logging.getLogger(__name__)
 
 
+def filter_jobs(queryset, data):
+    """Издөө жана чыпкалоо логикасы (вакансиялар тизмеси үчүн)."""
+    form = JobFilterForm(data)
+    if not form.is_valid():
+        return queryset, form
 
-def job_list(request):
-    jobs = Job.objects.all().order_by('-created_at')
-    return render(request, 'jobs/job_list.html', {'jobs': jobs})
+    cd = form.cleaned_data
+    if cd.get('search'):
+        q = cd['search']
+        queryset = queryset.filter(
+            Q(title__icontains=q) | Q(company__icontains=q) | Q(description__icontains=q)
+        )
+    if cd.get('category'):
+        queryset = queryset.filter(category=cd['category'])
+    if cd.get('job_type'):
+        queryset = queryset.filter(job_type=cd['job_type'])
+    if cd.get('location'):
+        queryset = queryset.filter(location__icontains=cd['location'])
+    if cd.get('salary_min'):
+        queryset = queryset.filter(salary__gte=cd['salary_min'])
+
+    sort = cd.get('sort') or 'new'
+    if sort == 'salary_desc':
+        queryset = queryset.order_by('-salary', '-created_at')
+    elif sort == 'salary_asc':
+        queryset = queryset.filter(salary__isnull=False).order_by('salary', '-created_at')
+    else:
+        queryset = queryset.order_by('-created_at')
+    return queryset, form
 
 
 def vacancy_list(request):
-    jobs = Job.objects.filter(is_active=True).order_by('-created_at')
-    search_query = request.GET.get('search')
-    category_query = request.GET.get('category')
+    jobs = Job.objects.filter(is_active=True).annotate(app_count=Count('applications'))
+    jobs, filter_form = filter_jobs(jobs, request.GET)
 
-    if search_query:
-        jobs = jobs.filter(title__icontains=search_query)
+    paginator = Paginator(jobs, 9)
+    page = paginator.get_page(request.GET.get('page'))
 
-    if category_query:
-        jobs = jobs.filter(category=category_query)
+    params = request.GET.copy()
+    params.pop('page', None)
+
+    context = {
+        'jobs': page,
+        'page_obj': page,
+        'total': paginator.count,
+        'filter_form': filter_form,
+        'querystring': params.urlencode(),
+    }
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return render(request, 'jobs/job_list_partial.html', {'jobs': jobs})
-
-    return render(request, 'jobs/job_list.html', {'jobs': jobs})
-
-
-@login_required
-def close_vacancy(request, pk):
-    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
-    job.is_active = False
-    job.save()
-    return redirect('profile')
+        return render(request, 'jobs/job_list_partial.html', context)
+    return render(request, 'jobs/job_list.html', context)
 
 
-@login_required
+# ---------------------------------------------------------------- Иш берүүчүнүн кабинети
+
 def profile_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    if request.user.is_superuser:
+        return redirect('admin_control')
     if request.user.role == 'student':
-        return redirect('vacancy_list')
+        return redirect('student_applications')
 
-    vacancies_list = Job.objects.filter(posted_by=request.user).order_by('-created_at')
-    paginator = Paginator(vacancies_list, 5)
-    page_number = request.GET.get('page')
-    user_vacancies = paginator.get_page(page_number)
-
-    return render(request, 'vacancy/profile.html', {'user_vacancies': user_vacancies})
-
-
-
-    
-
-@login_required
-def reopen_vacancy(request, pk):
-    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
-    job.is_active = True
-    job.save()
-    return redirect('profile')
-
-
-
-
-@login_required
-def edit_vacancy(request, pk):
-    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
-
-    if request.method == 'POST':
-        job.title = request.POST.get('title')
-        job.company = request.POST.get('company')
-        job.location = request.POST.get('location')
-        job.phone = request.POST.get('phone')
-        job.salary = request.POST.get('salary')
-        job.description = request.POST.get('description')
-        new_job_type = request.POST.get('job_type')
-        if new_job_type:
-            job.job_type = new_job_type
-
-        if request.FILES.get('company_logo'):
-            job.company_logo = request.FILES.get('company_logo')
-
-        job.save()
-        return redirect('profile')
-
-    return render(request, 'vacancy/edit_job.html', {'job': job})
-
-
-def delete_job(request, pk):
-    job = get_object_or_404(Job, pk=pk)
-    if request.method == 'POST':
-        job.delete()
-    return redirect('admin_control')
-
-
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
-def send_telegram_notification(job_title, company_name):
-
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-
-    if not token or not chat_id:
-        return
-    domain = "baiysh.pythonanywhere.com"
-
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-
-    message = (
-        f"🚀 **НОВАЯ ВАКАНСИЯ!**\n\n"
-        f"📌 Должность: {job_title}\n"
-        f"🏢 Компания: {company_name}\n\n"
-        f"🔗 [Читать на сайте](https://{domain}/ru/jobs/)"
+    vacancies = (
+        Job.objects.filter(posted_by=request.user)
+        .annotate(
+            app_count=Count('applications'),
+            pending_count=Count('applications', filter=Q(applications__status='pending')),
+        )
+        .order_by('-created_at')
     )
+    paginator = Paginator(vacancies, 8)
+    page = paginator.get_page(request.GET.get('page'))
 
-    try:
-        payload = {
-            'chat_id': chat_id,
-            'text': message,
-            'parse_mode': 'Markdown',
-            'disable_web_page_preview': False
-        }
-        response = requests.post(url, data=payload, timeout=10)
-
-        if response.status_code != 200:
-            print(f"TELEGRAM ERROR: Status {response.status_code}, {response.text}")
-
-    except Exception as e:
-        print(f"TELEGRAM CONNECTION ERROR: {e}")
+    from forms.models import Application
+    apps = Application.objects.filter(vacancy__posted_by=request.user)
+    stats = {
+        'active': vacancies.filter(is_active=True).count(),
+        'closed': vacancies.filter(is_active=False).count(),
+        'applications': apps.count(),
+        'pending': apps.filter(status='pending').count(),
+    }
+    return render(request, 'vacancy/profile.html', {'user_vacancies': page, 'stats': stats})
 
 
+@employer_required
 def post_job(request):
     if request.method == "POST":
         form = JobForm(request.POST)
         if form.is_valid():
             job = form.save(commit=False)
-            if request.user.is_authenticated:
-                job.posted_by = request.user
+            job.posted_by = request.user
             job.save()
-
-            try:
-                comp = str(job.company) if hasattr(job, 'company') else "Неизвестная компания"
-                send_telegram_notification(job.title, comp)
-            except Exception as e:
-                print(f"NOTIFICATION ERROR: {e}")
-
-            return redirect('job_list')
-        else:
-            print(form.errors)
+            send_telegram_notification(job, request)
+            messages.success(request, _("Вакансия успешно опубликована!"))
+            return redirect('profile')
     else:
-        form = JobForm()
+        initial = {}
+        last_job = Job.objects.filter(posted_by=request.user).order_by('-created_at').first()
+        if last_job:  # Мурунку вакансиядан компания жана телефонду автоматтык толтуруу
+            initial = {'company': last_job.company, 'phone': last_job.phone, 'location': last_job.location}
+        form = JobForm(initial=initial)
 
-    return render(request, 'jobs/post_job.html', {'form': form})
+    return render(request, 'jobs/post_job.html', {'form': form, 'is_edit': False})
+
+
+@employer_required
+def edit_vacancy(request, pk):
+    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
+    if request.method == 'POST':
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Изменения сохранены."))
+            return redirect('profile')
+    else:
+        form = JobForm(instance=job)
+    return render(request, 'jobs/post_job.html', {'form': form, 'is_edit': True, 'job': job})
+
+
+@require_POST
+@employer_required
+def close_vacancy(request, pk):
+    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
+    job.is_active = False
+    job.save(update_fields=['is_active'])
+    messages.info(request, _("Вакансия закрыта."))
+    return redirect('profile')
+
+
+@require_POST
+@employer_required
+def reopen_vacancy(request, pk):
+    job = get_object_or_404(Job, pk=pk, posted_by=request.user)
+    job.is_active = True
+    job.save(update_fields=['is_active'])
+    messages.success(request, _("Вакансия снова открыта."))
+    return redirect('profile')
+
+
+@require_POST
+def delete_job(request, pk):
+    """Вакансияны ээси же администратор гана өчүрө алат."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+    job = get_object_or_404(Job, pk=pk)
+    if not (request.user.is_superuser or job.posted_by_id == request.user.id):
+        messages.error(request, _("У вас нет доступа к этой странице."))
+        return redirect('home')
+    job.delete()
+    messages.success(request, _("Вакансия удалена."))
+    return redirect('admin_control' if request.user.is_superuser else 'profile')
+
+
+# ---------------------------------------------------------------- Telegram
+
+def send_telegram_notification(job, request=None):
+    token = settings.TELEGRAM_BOT_TOKEN
+    chat_id = settings.TELEGRAM_CHAT_ID
+    if not token or not chat_id:
+        return
+
+    link = settings.SITE_URL.rstrip('/') + reverse('vacancy_detail', args=[job.pk])
+    message = (
+        f"🚀 <b>Жаңы вакансия / Новая вакансия</b>\n\n"
+        f"📌 {job.title}\n"
+        f"🏢 {job.company}\n"
+        f"📍 {job.location}\n"
+        f"💰 {job.salary or '—'}\n\n"
+        f"🔗 <a href=\"{link}\">EduHub</a>"
+    )
+    try:
+        response = requests.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.warning("Telegram error %s: %s", response.status_code, response.text)
+    except requests.RequestException as exc:
+        logger.warning("Telegram connection error: %s", exc)

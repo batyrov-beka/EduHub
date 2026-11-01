@@ -1,313 +1,69 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% block title %}{% trans "Регистрация" %}{% endblock %}
+{% block footer %}{% endblock %}
+
 {% block content %}
-<style>
-:root {
-    --primary-color: #0073b1;
-    --primary-hover: #005582;
-    --bg-color: #0f1419;
-    --card-bg: #ffffff;
-    --text-main: white;
-    --text-muted: #a0aec0;
-    --border-color: #2d3748;
-    --input-focus: #3b82f6;
-}
+<div class="auth-wrap">
+    {% include 'partials/auth_side.html' %}
+    {% include 'partials/auth_mobile.html' with pos='top' %}
+    <div class="auth-main">
+        <div class="auth-card" style="max-width: 500px;">
+            <h1>{% trans "Регистрация" %}</h1>
+            <p class="lead">{% trans "После регистрации мы отправим код подтверждения на вашу почту." %}</p>
 
-/* Автозаполнение үчүн стиль */
-.auth-card input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px rgba(30, 50, 80, 0.6) inset !important;
-    -webkit-text-fill-color: #e0e7ff !important;
-}
+            <form method="post" id="registerForm" class="stack" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
 
-body {
-    background-color: var(--bg-color);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: white;
-    background: linear-gradient(-45deg, #0f1419, #1a3a52, #0f1419, #1a2b4a);
-    background-size: 400% 400%;
-    animation: gradient 8s ease infinite;
-    min-height: 100vh;
-}
-
-@keyframes gradient {
-    0% { background-position: 0% 25%; }
-    50% { background-position: 50% 75%; }
-    100% { background-position: 0% 50%; }
-}
-
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90vh;
-    padding: 20px;
-}
-
-.auth-card {
-    width: 100%;
-    max-width: 480px;
-    background: rgba(131, 168, 211, 0.12);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    padding: 40px;
-    border-radius: 24px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-}
-
-.auth-card h2 {
-    font-size: 28px;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 8px;
-}
-
-.subtitle {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 15px;
-    margin-bottom: 32px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.auth-card input,
-.auth-card select,
-.auth-card textarea {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 15px;
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    background: rgba(30, 50, 80, 0.6);
-    color: #e0e7ff;
-    transition: all 0.2s ease;
-    outline: none;
-    box-sizing: border-box;
-}
-
-.auth-card input:focus, .auth-card select:focus, .auth-card textarea:focus {
-    border-color: var(--input-focus);
-    background: rgba(30, 50, 80, 0.8);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
-}
-
-.password-wrapper {
-    position: relative;
-}
-
-.eye-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    z-index: 5;
-}
-
-.btn-register {
-    width: 100%;
-    padding: 14px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-}
-
-.btn-register:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-}
-
-.auth-footer {
-    text-align: center;
-    margin-top: 24px;
-    color: var(--text-muted);
-}
-
-.auth-footer a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.help-text {
-    font-size: 12px;
-    color: var(--text-muted);
-    display: block;
-    margin-top: 5px;
-}
-
-.alert-error {
-    padding: 12px;
-    background: rgba(225, 29, 72, 0.1);
-    color: #e11d48;
-    border: 1px solid rgba(225, 29, 72, 0.2);
-    border-radius: 12px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0px 1000px #1e3250 inset !important;
-    -webkit-text-fill-color: #e0e7ff !important;
-    transition: background-color 5000s ease-in-out 0s;
-}
-
-.auth-card input,
-.auth-card select,
-.auth-card textarea {
-    background-color: rgba(30, 50, 80, 0.6) !important;
-    color: #e0e7ff !important;
-}
-
-
-@media (max-width: 480px) {
-    .auth-container {
-        padding: 10px;
-        align-items: flex-start;
-        padding-top: 30px;
-    }
-
-    .auth-card {
-        padding: 25px 20px;
-        border-radius: 20px;
-    }
-
-    .auth-card h2 {
-        font-size: 22px;
-    }
-
-    .subtitle {
-        font-size: 13px;
-        margin-bottom: 24px;
-    }
-
-    .auth-card input,
-    .auth-card select,
-    .auth-card textarea {
-        padding: 10px 14px;
-        font-size: 14px;
-    }
-
-    .btn-register {
-        padding: 12px;
-        font-size: 15px;
-    }
-}
-
-@media (max-width: 350px) {
-    .auth-card {
-        padding: 20px 15px;
-    }
-}
-</style>
-
-<div class="auth-container">
-    <div class="auth-card">
-        <h2>{% trans "Регистрация" %}</h2>
-        <p class="subtitle">{% trans "Создайте аккаунт, чтобы начать обучение в EduHub" %}</p>
-
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert-error">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-
-        <form method="post" id="registerForm" novalidate>
-            {% csrf_token %}
-
-            {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">
-                        {% if field.name == "username" %}{% trans "Имя пользователя" %}
-                        {% elif field.name == "email" %}{% trans "Электронная почта" %}
-                        {% elif field.name == "password1" %}{% trans "Придумайте пароль" %}
-                        {% elif field.name == "password2" %}{% trans "Повторите пароль" %}
-                        {% elif field.name == "role" %}{% trans "Выберите вашу роль" %}
-                        {% else %}{{ field.label }}
-                        {% endif %}
-                    </label>
-
-                    <div class="{% if 'password' in field.name %}password-wrapper{% endif %}">
-                        {% if field.name == "role" %}
-                            <select name="{{ field.name }}" id="{{ field.id_for_label }}">
-                                {% for value, text in field.field.choices %}
-                                    <option value="{{ value }}" {% if field.value == value %}selected{% endif %}>
-                                        {% if text == "Student" or text == "Студент" %}{% trans "Студент" %}
-                                        {% elif text == "Employer" or text == "Работодатель" %}{% trans "Работодатель" %}
-                                        {% else %}{{ text }}{% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        {% else %}
-                            {{ field }}
-                        {% endif %}
-
-                        {% if "password" in field.name %}
-                            <button type="button" class="eye-toggle toggle-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
-                                    <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path class="eye-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                        {% endif %}
+                <div class="field">
+                    <span class="label">{% trans "Кто вы?" %}</span>
+                    <div class="role-picker">
+                        <div class="role-option">
+                            <input type="radio" name="role" id="role-student" value="student" {% if form.role.value != 'employer' %}checked{% endif %}>
+                            <label for="role-student"><strong><i class="bi bi-mortarboard"></i>{% trans "Студент" %}</strong><span>{% trans "Ищу работу или стажировку" %}</span></label>
+                        </div>
+                        <div class="role-option">
+                            <input type="radio" name="role" id="role-employer" value="employer" {% if form.role.value == 'employer' %}checked{% endif %}>
+                            <label for="role-employer"><strong><i class="bi bi-building"></i>{% trans "Работодатель" %}</strong><span>{% trans "Публикую вакансии" %}</span></label>
+                        </div>
                     </div>
-
-                    {% if field.help_text %}
-                        <span class="help-text">{{ field.help_text|safe }}</span>
-                    {% endif %}
-
-                    {% for error in field.errors %}
-                        <span style="color: #e11d48; font-size: 12px; margin-top: 4px; display: block;">{{ error }}</span>
-                    {% endfor %}
+                    <div class="alert alert-info" id="employerNote" style="margin-top: 10px;"><i class="bi bi-shield-check"></i><span>{% trans "Аккаунты работодателей проверяет администратор. Пока проверка не пройдена, публиковать вакансии нельзя." %}</span></div>
                 </div>
-            {% endfor %}
 
-            <button type="submit" class="btn-register">{% trans "Создать аккаунт" %}</button>
-        </form>
-        <div class="auth-footer">
-            {% trans "Уже есть аккаунт?" %} <a href="{% url 'login' %}">{% trans "Войти здесь" %}</a>
+                {% include 'partials/field.html' with field=form.username %}
+                {% include 'partials/field.html' with field=form.email %}
+                <div class="form-grid">
+                    <div id="universityField">{% include 'partials/field.html' with field=form.university %}</div>
+                    {% include 'partials/field.html' with field=form.phone %}
+                </div>
+                <div id="verificationField">{% include 'partials/field.html' with field=form.verification_data %}</div>
+                {% include 'partials/field.html' with field=form.password1 %}
+                {% include 'partials/field.html' with field=form.password2 %}
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block">{% trans "Создать аккаунт" %}</button>
+            </form>
+            <p class="auth-foot">{% trans "Уже есть аккаунт?" %} <a href="{% url 'login' %}">{% trans "Войти" %}</a></p>
         </div>
     </div>
+    {% include 'partials/auth_mobile.html' with pos='bottom' %}
 </div>
+{% endblock %}
 
+{% block scripts %}
+{% include 'partials/pw_toggle.html' %}
 <script>
-    const eyePath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
-    const eyeSlashPath = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 1.247 0 2.41.226 3.487.638M19.88 19.88L3 3m16.88 16.88l-3.69-3.69m3.69 3.69l3.12 3.12M18.165 11.705A10.039 10.039 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M17.657 5.343A10.062 10.062 0 0112 5c-4.478 0-8.268 2.943-9.542 7-1.274 4.057-5.064 7-9.542 7-1.247 0-2.41-.226-3.487-.638M9.88 9.88l.458.458m4.342 4.342l.458.458m-4.342-4.342a3 3 0 114.243 4.243m-4.242-4.242L3 3" />`;
-
-    document.querySelectorAll('.toggle-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = this.parentElement.querySelector('input');
-            const svg = this.querySelector('svg');
-
-            if (input.type === 'password') {
-                input.type = 'text';
-                svg.innerHTML = eyeSlashPath;
-            } else {
-                input.type = 'password';
-                svg.innerHTML = eyePath;
-            }
-        });
-    });
+(function () {
+    const uni = document.getElementById('universityField');
+    const ver = document.getElementById('verificationField');
+    function sync() {
+        const employer = document.getElementById('role-employer').checked;
+        ver.style.display = employer ? '' : 'none';
+        document.getElementById('employerNote').style.display = employer ? '' : 'none';
+        uni.style.display = employer ? 'none' : '';
+    }
+    document.querySelectorAll('input[name=role]').forEach(r => r.addEventListener('change', sync));
+    sync();
+})();
 </script>
 {% endblock %}

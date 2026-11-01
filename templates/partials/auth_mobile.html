@@ -1,0 +1,31 @@
+{% load i18n %}
+<style>
+.auth-m-top, .auth-m-bottom { display: none; }
+@media (max-width: 1024px) {
+    .auth-wrap { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; min-height: calc(100vh - 68px); }
+    .auth-m-top { display: block; padding: 28px 20px 44px; color: #fff; background: linear-gradient(135deg, #1F4FD8, #3A63E8 60%, #5B7FF0); position: relative; overflow: hidden; }
+    .auth-m-top::after { content: ""; position: absolute; right: -50px; top: -50px; width: 180px; height: 180px; border-radius: 50%; background: rgba(242, 183, 5, .35); }
+    .auth-m-top h2 { color: #fff; font-size: 1.25rem; max-width: 300px; margin: 10px 0 0; position: relative; z-index: 1; }
+    .auth-m-badge { display: inline-flex; gap: 6px; align-items: center; font-size: .78rem; font-weight: 700; background: rgba(255, 255, 255, .18); padding: 5px 12px; border-radius: 999px; position: relative; z-index: 1; }
+    .auth-main { padding: 0 16px; margin-top: -26px; position: relative; z-index: 2; display: block; }
+    .auth-main .auth-card { background: #fff; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px rgba(20, 33, 61, .15); margin: 0 auto 28px; }
+    .auth-m-bottom { display: block; background: #14213D; color: #DCE3F0; padding: 24px 20px 20px; font-size: .9rem; }
+    .auth-m-bottom .auth-points { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 10px; }
+    .auth-m-bottom .auth-points li { display: flex; gap: 12px; align-items: flex-start; }
+    .auth-m-bottom .auth-points i { color: #F2B705; }
+}
+</style>
+{% if pos == 'top' %}
+<div class="auth-m-top">
+    <span class="auth-m-badge"><i class="bi bi-mortarboard-fill"></i> OshSU · EduHub</span>
+    <h2>{% trans "Работа и стажировки для студентов ОшГУ" %}</h2>
+</div>
+{% else %}
+<div class="auth-m-bottom">
+    <ul class="auth-points">
+        <li><i class="bi bi-check-circle-fill"></i><span>{% trans "Только проверенные работодатели — каждую компанию проверяет администратор." %}</span></li>
+        <li><i class="bi bi-check-circle-fill"></i><span>{% trans "Одно резюме для всех откликов." %}</span></li>
+        <li><i class="bi bi-check-circle-fill"></i><span>{% trans "Уведомления о решении работодателя на сайте и по почте." %}</span></li>
+    </ul>
+</div>
+{% endif %}

@@ -1,552 +1,112 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Вакансии" %}{% endblock %}
 
 {% block content %}
-
-    <style>
-
-    :root {
-
-    --primary-color: #0073b1;
-
-    --primary-hover: #005582;
-
-    --bg-color: #0f1419;
-
-    --card-bg: rgba(131, 168, 211, 0.08);
-
-    --text-main: #ffffff;
-
-    --text-muted: #a0aec0;
-
-    --border-color: rgba(255, 255, 255, 0.12);
-
-    --accent-color: #3b82f6;
-
-    }
-
-
-
-    body {
-
-    background-color: var(--bg-color);
-
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-
-    color: var(--text-main);
-
-    background: linear-gradient(-45deg, #0f1419, #1a3a52, #0f1419, #1a2b4a);
-
-    background-size: 400% 400%;
-
-    animation: gradient 8s ease infinite;
-
-    min-height: 100vh;
-
-    margin: 0;
-
-    }
-
-
-
-    @keyframes gradient {
-
-    0% { background-position: 0% 25%; }
-
-    50% { background-position: 100% 50%; }
-
-    100% { background-position: 0% 25%; }
-
-    }
-
-
-
-
-.search-container {
-    max-width: 1200px;
-    margin: 0 auto 40px auto;
-    padding: 0 20px;
-}
-
-.search-section {
-    background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(15px);
-    padding: 20px;
-    border-radius: 24px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-}
-
-
-.search-row {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-}
-
-.search-input {
-    flex: 1;
-    background: rgba(15, 23, 42, 0.7) !important;
-    border: 1px solid rgba(56, 189, 248, 0.3) !important;
-    border-radius: 14px !important;
-    color: white !important;
-    padding: 14px 20px !important;
-    font-size: 16px;
-    width: 100%;
-    outline: none;
-}
-
-.search-input:focus {
-    border-color: var(--accent-color) !important;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
-}
-
-.btn-search {
-    background: var(--accent-color);
-    color: white;
-    font-weight: 700;
-    border-radius: 14px;
-    padding: 14px 35px;
-    border: none;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.btn-search:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-}
-
-
-@media (max-width: 768px) {
-    .search-row {
-        flex-direction: column;
-    }
-    .btn-search {
-        width: 100%;
-    }
-}
-
-
-
-    .page-header {
-
-    margin: 40px 0;
-
-    text-align: center;
-
-    }
-
-
-
-    .page-header h2 {
-
-    font-weight: 800;
-
-    font-size: 42px;
-
-    color: var(--text-main);
-
-    letter-spacing: -1px;
-
-    }
-
-
-
-    .page-header p {
-
-    color: var(--text-muted);
-
-    font-size: 18px;
-
-    }
-
-
-
-    .jobs-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-
-    gap: 25px;
-
-    padding: 20px;
-
-    max-width: 1200px;
-
-    margin: 0 auto;
-
-    }
-
-
-
-    .job-card {
-
-    background: var(--card-bg);
-
-    backdrop-filter: blur(15px);
-
-    border: 1px solid var(--border-color);
-
-    border-radius: 24px;
-
-    padding: 30px;
-
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: space-between;
-
-    }
-
-
-
-    .job-card:hover {
-
-    transform: translateY(-10px);
-
-    background: rgba(131, 168, 211, 0.15);
-
-    border-color: var(--accent-color);
-
-    }
-
-
-
-    .company-wrapper {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-    margin-bottom: 20px;
-
-    }
-
-
-
-    .company-logo-plug {
-
-    width: 50px;
-
-    height: 50px;
-
-    background: rgba(30, 50, 80, 0.8);
-
-    border-radius: 14px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    color: var(--accent-color);
-
-    font-weight: bold;
-
-    }
-
-
-
-    .job-title {
-
-    font-size: 24px;
-
-    font-weight: 800;
-
-    color: var(--text-main);
-
-    margin-bottom: 8px;
-
-    }
-
-
-
-    .big_phone {
-
-    font-size: 14px;
-
-    color: #94a3b8;
-
-    margin-bottom: 12px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    }
-
-
-
-    .meta-tags {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-bottom: 20px;
-
-    }
-
-
-
-    .tag {
-
-    padding: 6px 14px;
-
-    border-radius: 10px;
-
-    font-size: 12px;
-
-    font-weight: 700;
-
-    background: rgba(255, 255, 255, 0.05);
-
-    color: var(--text-muted);
-
-    }
-
-
-
-    .tag-salary {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-
-    }
-
-
-
-    .job-desc {
-
-    font-size: 15px;
-
-    color: var(--text-muted);
-
-    line-height: 1.6;
-
-    margin-bottom: 25px;
-
-    }
-
-
-
-    .job-footer {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    padding-top: 20px;
-
-    border-top: 1px solid var(--border-color);
-
-    }
-
-
-
-    @media (max-width: 768px) {
-        .page-header h2 { font-size: 28px; }
-        .page-header p { font-size: 15px; }
-
-        .search-row {
-            flex-direction: column;
-        }
-
-        .btn-search {
-            width: 100%;
-            padding: 12px;
-        }
-
-        .jobs-grid {
-            grid-template-columns: 1fr;
-            padding: 15px;
-        }
-    }
-
-    .tg-promo-container {
-        padding: 10px;
-        width: 100%;
-        max-width: 900px;
-        margin: 0 auto 20px auto;
-    }
-
-    .tg-promo-card {
-        background: rgba(36, 47, 61, 0.7);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
-        transition: transform 0.3s ease;
-    }
-
-    .tg-promo-card:hover {
-        transform: translateY(-3px);
-        border-color: #0088cc;
-    }
-
-    .tg-content {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .tg-icon-wrapper img {
-        width: 50px;
-        height: 50px;
-        filter: drop-shadow(0 0 10px rgba(0, 136, 204, 0.4));
-    }
-
-    .tg-text h4 {
-        color: #fff;
-        margin: 0 0 5px 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .tg-text p {
-        color: #b0b3b8;
-        margin: 0;
-        font-size: 0.9rem;
-    }
-
-    .tg-btn {
-        background: linear-gradient(135deg, #0088cc, #00a2ed);
-        color: white !important;
-        text-decoration: none !important;
-        padding: 10px 25px;
-        border-radius: 10px;
-        font-weight: bold;
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
-    }
-
-
-    @media (max-width: 600px) {
-        .tg-promo-card {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .tg-content {
-            flex-direction: column;
-        }
-
-        .tg-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .tg-text p {
-            display: none;
-        }
-    }
-</style>
-
-
-
-
-{% load i18n %}
-<div class="container">
-    <div class="page-header">
-        <h2>{% trans "Актуальные предложения" %}</h2> <br>
-        <p>{% trans "Найдите работу или стажировку, которая изменит вашу жизнь" %}</p>
-    </div>
-   {% load i18n %}
-
-{% if user.is_authenticated and not user.is_staff or user.is_superuser %}
-    <div class="tg-promo-container">
-        <div class="tg-promo-card">
-            <div class="tg-content">
-                <div class="tg-icon-wrapper">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+<div class="page">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <h1>{% trans "Вакансии и стажировки" %}</h1>
+                <p>{% trans "Предложения от проверенных работодателей" %}</p>
+            </div>
+            <button class="btn btn-outline filter-toggle" type="button" id="filterToggle"><i class="bi bi-sliders"></i>{% trans "Фильтры" %}</button>
+        </div>
+
+        <div class="layout-filters">
+            <form class="panel filters sticky" id="filterForm" method="get" action="{% url 'vacancy_list' %}">
+                <div class="field">
+                    <label for="f-search">{% trans "Поиск" %}</label>
+                    <div class="input-icon">
+                        <i class="bi bi-search"></i>
+                        <input id="f-search" type="search" name="search" value="{{ filter_form.search.value|default:'' }}" placeholder="{% trans 'Должность, компания' %}">
+                    </div>
                 </div>
-                <div class="tg-text">
-                    <h4>{% trans "Следите в Telegram" %}</h4>
-                    <p>{% trans "Мгновенно получайте уведомления о новых вакансиях" %}</p>
+                <div class="field">
+                    <label for="f-category">{% trans "Категория" %}</label>
+                    {{ filter_form.category }}
+                </div>
+                <div class="field">
+                    <span class="label">{% trans "Тип занятости" %}</span>
+                    <div class="chips" id="typeChips">
+                        {% for value, label in filter_form.job_type.field.choices %}
+                            <label class="chip {% if filter_form.job_type.value == value or not filter_form.job_type.value and not value %}active{% endif %}" style="cursor: pointer;">
+                                <input type="radio" name="job_type" value="{{ value }}" class="sr-only" {% if filter_form.job_type.value == value %}checked{% endif %}>
+                                {{ label }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="f-location">{% trans "Город" %}</label>
+                    <input id="f-location" type="text" name="location" value="{{ filter_form.location.value|default:'' }}" placeholder="{% trans 'Например: Ош' %}">
+                </div>
+                <div class="field">
+                    <label for="f-salary">{% trans "Зарплата от, сом" %}</label>
+                    <input id="f-salary" type="number" min="0" step="1000" name="salary_min" value="{{ filter_form.salary_min.value|default:'' }}" placeholder="20000">
+                </div>
+                <input type="hidden" name="sort" value="{{ filter_form.sort.value|default:'new' }}" id="sortHidden">
+                <div class="row" style="margin-top: 18px;">
+                    <button class="btn btn-primary" type="submit">{% trans "Применить" %}</button>
+                    <a href="{% url 'vacancy_list' %}" class="btn btn-ghost">{% trans "Сбросить" %}</a>
+                </div>
+            </form>
+
+            <div>
+                <div class="row-between" style="margin-bottom: 4px;">
+                    <span></span>
+                    <label class="row small muted" style="gap: 8px;">
+                        {% trans "Сортировка" %}
+                        <select id="sortSelect" style="width: auto; padding-top: 7px; padding-bottom: 7px;">
+                            {% for value, label in filter_form.sort.field.choices %}
+                                <option value="{{ value }}" {% if filter_form.sort.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </div>
+                <div id="results">
+                    {% include 'jobs/job_list_partial.html' %}
                 </div>
             </div>
-            <a href="https://t.me/eduhub_kg_jobs" target="_blank" class="tg-btn">
-                <span>{% trans "Присоединиться" %}</span>
-                <i class="fab fa-telegram-plane"></i>
-            </a>
         </div>
     </div>
-{% endif %}
-
-   <div class="search-container">
-    <div class="search-section">
-        <form method="GET" action="{% url 'vacancy_list' %}" class="search-row" id="search-form">
-
-            <input type="text" name="search" class="search-input"
-                   placeholder="{% trans 'Поиск вакансий...' %}"
-                   value="{{ request.GET.search|default:'' }}" autocomplete="off">
-
-            <select name="category" class="search-input category-select" style="flex: 0.4; cursor: pointer;">
-            <option value="">{% trans "Все категории" %}</option>
-<option value="it" {% if request.GET.category == 'it' %}selected{% endif %}>{% trans "IT / Программирование" %}</option>
-<option value="marketing" {% if request.GET.category == 'marketing' %}selected{% endif %}>{% trans "Маркетинг" %}</option>
-<option value="admin" {% if request.GET.category == 'admin' %}selected{% endif %}>{% trans "Администрация" %}</option>
-<option value="design" {% if request.GET.category == 'design' %}selected{% endif %}>{% trans "Дизайн" %}</option>
-<option value="other" {% if request.GET.category == 'other' %}selected{% endif %}>{% trans "Другие" %}</option>
-            </select>
-
-            <button type="submit" class="btn-search">{% trans "Найти" %}</button>
-        </form>
-    </div>
 </div>
+{% endblock %}
 
-    <div class="jobs-grid">
-        {% include 'jobs/job_list_partial.html' %}
-    </div>
-</div>
-
-
-
+{% block scripts %}
 <script>
-   const searchInput = document.querySelector('.search-input');
-    const categorySelect = document.querySelector('.category-select');
-    const jobContainer = document.querySelector('.jobs-grid');
+(function () {
+    const form = document.getElementById('filterForm');
+    const results = document.getElementById('results');
+    const category = form.querySelector('select[name=category]');
+    category.id = 'f-category';
 
-    function performSearch() {
-        const query = searchInput.value;
-        const category = categorySelect.value;
-        const url = `{% url 'vacancy_list' %}?search=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`;
+    document.getElementById('filterToggle').addEventListener('click', () => form.classList.toggle('open'));
 
-        fetch(url, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.text())
-        .then(data => {
-            jobContainer.innerHTML = data;
-        })
-        .catch(err => console.error("Ката:", err));
+    // AJAX — бетти кайра жүктөбөй жыйынтыкты жаңыртуу
+    let timer;
+    function load() {
+        const params = new URLSearchParams(new FormData(form));
+        for (const [k, v] of [...params]) if (!v) params.delete(k);
+        const url = form.action + (params.toString() ? '?' + params : '');
+        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.text())
+            .then(html => { results.innerHTML = html; history.replaceState(null, '', url); });
     }
-
-    searchInput.addEventListener('input', performSearch);
-
-    categorySelect.addEventListener('change', performSearch);
+    form.addEventListener('input', (e) => {
+        if (e.target.type === 'radio') return;
+        clearTimeout(timer); timer = setTimeout(load, 350);
+    });
+    form.addEventListener('change', (e) => {
+        if (e.target.type === 'radio') {
+            form.querySelectorAll('#typeChips .chip').forEach(c => c.classList.toggle('active', c.contains(e.target)));
+        }
+        if (e.target.tagName === 'SELECT' || e.target.type === 'radio') load();
+    });
+    form.addEventListener('submit', (e) => { e.preventDefault(); load(); form.classList.remove('open'); });
+    document.getElementById('sortSelect').addEventListener('change', (e) => {
+        document.getElementById('sortHidden').value = e.target.value; load();
+    });
+})();
 </script>
-
-
 {% endblock %}

@@ -8,7 +8,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-only-insecure-key-change-me'
 DEBUG = os.getenv('DEBUG') == 'True'
 
 
@@ -17,6 +17,7 @@ ALLOWED_HOSTS = hosts.split(',') if hosts else ['127.0.0.1', 'localhost']
 
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,6 +56,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Dashboard.context_processors.notifications',
             ],
         },
     },
@@ -82,7 +84,7 @@ LANGUAGES = [
     ('ru', 'Русский'),
     ('ky', 'Кыргызча'),
 ]
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bishkek'
 USE_I18N = True
 USE_TZ = True
 
@@ -93,7 +95,8 @@ LOCALE_PATHS = [
 AUTH_USER_MODEL = 'users.CustomUser'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -102,12 +105,25 @@ LOGIN_URL = 'login'
 LOGOUT_REDIRECT_URL = 'home'
 LOGOUT_ON_GET = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'EduHub <noreply@eduhub.kg>'
+
+# Почта жөндөлбөсө (EMAIL_PASS жок), каттар консолго чыгат — локалдык иштөө үчүн ыңгайлуу.
+if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Сайттын дареги (каттардагы шилтемелер үчүн)
+SITE_URL = os.getenv('SITE_URL', 'https://baiysh.pythonanywhere.com')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+# OTP кодунун жарактуу мөөнөтү (мүнөт)
+OTP_LIFETIME_MINUTES = 10
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

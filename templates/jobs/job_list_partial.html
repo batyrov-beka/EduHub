@@ -1,43 +1,17 @@
 {% load i18n %}
-{% for job in jobs %}
-<div class="job-card">
-    <div>
-        <div class="company-wrapper">
-            <div class="company-logo-plug">
-                {% if job.company_logo %}
-                    <img src="{{ job.company_logo.url }}" alt="logo" style="width:100%; height:100%; object-fit:cover; border-radius:12px;">
-                {% else %}
-                    {{ job.company|slice:":1" }}
-                {% endif %}
-            </div>
-            <div>
-                <div style="font-weight: 700;">{{ job.company }}</div>
-                <div style="font-size: 13px; color: var(--text-muted);">📍 {{ job.location }}</div>
-            </div>
-        </div>
-        <div class="job-title">{{ job.title }}</div>
-        <div class="big_phone">📞 {{ job.phone }}</div>
-        <div class="meta-tags">
-            <span class="tag">{{ job.job_type }}</span>
-            <span class="tag tag-salary">💰 {{ job.salary|default:_("Договорная") }}</span>
-        </div>
-        <div class="job-desc">{{ job.description|truncatewords:15 }}</div>
-
-        <div style="margin-top: 15px;">
-            <a href="https://wa.me/{{ job.phone|cut:'+'|cut:' ' }}?text={% trans 'Саламатсызбы! Мен сиздин «EduHub» сайтындагы' %} {{ job.title }} {% trans 'вакансияңыз боюнча жазып жатам.' %}"
-               target="_blank"
-               style="display: flex; align-items: center; justify-content: center; background: #25D366; color: white; padding: 10px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="18" style="margin-right: 8px;">
-                WhatsApp
-            </a>
-        </div>
-    </div>
-
-    <div class="job-footer">
-        <div style="font-size: 12px; color: var(--text-muted);">🕒 {{ job.created_at|timesince }} {% trans "назад" %}</div>
-        <a href="{% url 'vacancy_detail' job.id %}" class="btn-details" style="background: var(--accent-color); color: white; padding: 10px 24px; border-radius: 12px; text-decoration: none; font-weight: 700;">{% trans "Открыть" %}</a>
-    </div>
+<div class="results-bar">
+    <span class="muted">{% blocktrans count counter=total %}Найдена {{ counter }} вакансия{% plural %}Найдено вакансий: {{ counter }}{% endblocktrans %}</span>
 </div>
-{% empty %}
-<div style="grid-column: 1/-1; text-align: center; padding: 60px 0;">{% trans "Ничего не найдено" %}</div>
-{% endfor %}
+<div class="job-list">
+    {% for job in jobs %}
+        {% include 'partials/job_row.html' %}
+    {% empty %}
+        <div class="panel empty">
+            <i class="bi bi-search"></i>
+            <h3>{% trans "Ничего не найдено" %}</h3>
+            <p>{% trans "Попробуйте изменить условия поиска или сбросить фильтры." %}</p>
+            <a href="{% url 'vacancy_list' %}" class="btn btn-outline btn-sm">{% trans "Сбросить фильтры" %}</a>
+        </div>
+    {% endfor %}
+</div>
+{% include 'partials/pagination.html' %}

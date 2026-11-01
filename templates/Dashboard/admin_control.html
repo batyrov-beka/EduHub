@@ -1,273 +1,163 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n eduhub_extras %}
+{% block title %}{% trans "Панель управления" %}{% endblock %}
 
 {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<style>
-
-    .admin-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        font-family: 'Inter', sans-serif;
-    }
-
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-        margin-bottom: 40px;
-    }
-
-    .stat-card {
-        background: linear-gradient(145deg, #1e293b, #0f172a);
-        padding: 30px;
-        border-radius: 28px;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        border-color: #38bdf8;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-    }
-
-    .tabs-nav {
-        display: flex;
-        gap: 15px;
-        margin: 30px 0;
-        background: rgba(30, 41, 59, 0.5);
-        padding: 8px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        overflow-x: auto;
-    }
-
-    .tab-btn {
-        background: none;
-        border: none;
-        color: #94a3b8;
-        padding: 12px 24px;
-        cursor: pointer;
-        font-weight: 700;
-        transition: 0.3s;
-        border-radius: 16px;
-        flex: 1;
-        white-space: nowrap;
-    }
-
-    .tab-btn.active {
-        color: white;
-        background: #38bdf8;
-        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-    }
-
-
-    .glass-card {
-        background: #1e293b;
-        padding: 24px;
-        border-radius: 24px;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        transition: 0.3s;
-    }
-
-
-    .btn-group {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
-    .btn-action {
-        padding: 10px 18px;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 13px;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.2s;
-        cursor: pointer;
-        border: none;
-    }
-
-    .btn-view { background: rgba(56, 189, 248, 0.1); color: #38bdf8; }
-    .btn-view:hover { background: #38bdf8; color: white; }
-
-
-    .btn-block { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .btn-block:hover { background: #f59e0b; color: white; }
-    .btn-unblock { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-    .btn-unblock:hover { background: #10b981; color: white; }
-
-    .btn-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .btn-delete:hover { background: #ef4444; color: white; }
-
-    .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
-    .tab-content.active { display: block; }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 768px) {
-        .glass-card { flex-direction: column; align-items: flex-start; gap: 20px; }
-        .btn-group { width: 100%; }
-        .btn-action { flex: 1; justify-content: center; min-width: 140px; }
-    }
-</style>
-
-<div class="admin-container">
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span style="font-size: 2.5rem;">🎓</span>
-            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_students }}</h3>
-            <p style="color: #94a3b8; font-weight: 600;">{% trans "Студенты" %}</p>
+<div class="page">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <h1>{% trans "Панель управления" %}</h1>
+                <p>{% trans "Пользователи, вакансии и статистика платформы" %}</p>
+            </div>
+            <a href="{% url 'admin:index' %}" class="btn btn-outline"><i class="bi bi-gear"></i>Django admin</a>
         </div>
-        <div class="stat-card">
-            <span style="font-size: 2.5rem;">🏢</span>
-            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_employers }}</h3>
-            <p style="color: #94a3b8; font-weight: 600;">{% trans "Компании" %}</p>
+
+        <div class="kpis">
+            <div class="kpi"><span><i class="bi bi-mortarboard"></i>{% trans "Студенты" %}</span><b>{{ total_students }}</b></div>
+            <div class="kpi"><span><i class="bi bi-building"></i>{% trans "Компании" %}</span><b>{{ total_employers }}</b></div>
+            <div class="kpi"><span><i class="bi bi-briefcase"></i>{% trans "Вакансии (активные)" %}</span><b>{{ total_jobs }} <small class="muted" style="font-size: .9rem;">({{ active_jobs }})</small></b></div>
+            <a href="?tab=requests" class="kpi {% if pending_users %}accent{% endif %}" style="color: var(--ink);"><span><i class="bi bi-person-check"></i>{% trans "Запросы на проверку" %}</span><b>{{ pending_users|length }}</b></a>
         </div>
-        <div class="stat-card">
-            <span style="font-size: 2.5rem;">💼</span>
-            <h3 style="color: white; font-size: 2rem; margin: 10px 0;">{{ total_jobs }}</h3>
-            <p style="color: #94a3b8; font-weight: 600;">{% trans "Активные вакансии" %}</p>
+
+        <nav class="tabs">
+            <a href="?tab=overview" class="{% if tab == 'overview' %}active{% endif %}">{% trans "Обзор" %}</a>
+            <a href="?tab=requests" class="{% if tab == 'requests' %}active{% endif %}">{% trans "Запросы" %} <span class="count">{{ pending_users|length }}</span></a>
+            <a href="?tab=students" class="{% if tab == 'students' %}active{% endif %}">{% trans "Студенты" %} <span class="count">{{ total_students }}</span></a>
+            <a href="?tab=employers" class="{% if tab == 'employers' %}active{% endif %}">{% trans "Работодатели" %} <span class="count">{{ total_employers }}</span></a>
+            <a href="?tab=jobs" class="{% if tab == 'jobs' %}active{% endif %}">{% trans "Вакансии" %} <span class="count">{{ total_jobs }}</span></a>
+            <a href="?tab=broadcast" class="{% if tab == 'broadcast' %}active{% endif %}">{% trans "Рассылка" %}</a>
+        </nav>
+
+        {% if tab == 'overview' %}
+        <div class="grid grid-2">
+            <div class="panel">
+                <div class="panel-title"><h3>{% trans "Отклики за 14 дней" %}</h3><span class="muted small">{% trans "Всего:" %} {{ total_applications }}</span></div>
+                <div class="bars">
+                    {% for a in activity %}
+                        <div class="bar {% if a.total %}has{% endif %}" style="height: {% widthratio a.total max_activity 100 %}%;" data-tip="{{ a.day|date:'d.m' }}: {{ a.total }}"></div>
+                    {% endfor %}
+                </div>
+                <div class="bars-labels">
+                    {% for a in activity %}<span>{% if forloop.counter0|divisibleby:3 %}{{ a.day|date:'d.m' }}{% endif %}</span>{% endfor %}
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-title"><h3>{% trans "Статусы откликов" %}</h3></div>
+                {% with s=status_counts %}
+                <div class="stack">
+                    <div>
+                        <div class="row-between small"><span>{% trans "На рассмотрении" %}</span><b>{{ s.pending }}</b></div>
+                        <div class="progress"><span style="width: {{ s.pending|percent:total_applications }}%; background: var(--warning);"></span></div>
+                    </div>
+                    <div>
+                        <div class="row-between small"><span>{% trans "Приняты" %}</span><b>{{ s.accepted }}</b></div>
+                        <div class="progress"><span style="width: {{ s.accepted|percent:total_applications }}%; background: var(--success);"></span></div>
+                    </div>
+                    <div>
+                        <div class="row-between small"><span>{% trans "Отклонены" %}</span><b>{{ s.rejected }}</b></div>
+                        <div class="progress"><span style="width: {{ s.rejected|percent:total_applications }}%; background: var(--danger);"></span></div>
+                    </div>
+                    <p class="small muted" style="margin: 0;">{% blocktrans with p=s.accepted|percent:total_applications %}Доля принятых откликов: {{ p }}%. Заполненных резюме: {% endblocktrans %}{{ resumes_count }}.</p>
+                </div>
+                {% endwith %}
+            </div>
+            <div class="panel">
+                <div class="panel-title"><h3>{% trans "Вакансии по категориям" %}</h3></div>
+                {% for c in by_category %}
+                    <div class="hbar"><span>{{ c.label }}</span><div class="track"><span style="width: {% widthratio c.total max_category 100 %}%;"></span></div><b>{{ c.total }}</b></div>
+                {% empty %}<p class="muted">—</p>{% endfor %}
+            </div>
+            <div class="panel">
+                <div class="panel-title"><h3>{% trans "Отчёты (Excel)" %}</h3></div>
+                <p class="muted small">{% trans "Выгрузка данных в CSV-файл, который открывается в Microsoft Excel." %}</p>
+                <div class="stack">
+                    <a href="{% url 'export_csv' 'students' %}" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="bi bi-file-earmark-spreadsheet"></i>{% trans "Студенты и их отклики" %}</a>
+                    <a href="{% url 'export_csv' 'jobs' %}" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="bi bi-file-earmark-spreadsheet"></i>{% trans "Вакансии" %}</a>
+                    <a href="{% url 'export_csv' 'applications' %}" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="bi bi-file-earmark-spreadsheet"></i>{% trans "Все отклики" %}</a>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="tabs-nav">
-        <button class="tab-btn active" onclick="openTab(event, 'students_tab')">👨‍🎓 {% trans "Студенты" %}</button>
-        <button class="tab-btn" onclick="openTab(event, 'employers_tab')">🏢 {% trans "Работодатели" %}</button>
-        <button class="tab-btn" onclick="openTab(event, 'jobs_tab')">💼 {% trans "Вакансии" %}</button>
-        <button class="tab-btn" onclick="openTab(event, 'requests_tab')">📩 {% trans "Запросы" %} ({{ pending_users.count|default:0 }})</button>
-    </div>
+        {% elif tab == 'requests' %}
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>{% trans "Компания" %}</th><th>{% trans "ИНН / данные" %}</th><th>{% trans "Дата" %}</th><th></th></tr></thead>
+                <tbody>
+                {% for u in pending_users %}
+                    <tr>
+                        <td><div class="person"><span class="avatar">{{ u.username|slice:':1'|upper }}</span><div><b>{{ u.username }}</b><small>{{ u.email }} · {{ u.phone|default:'—' }}</small></div></div></td>
+                        <td>{{ u.verification_data|default:'—' }}</td>
+                        <td class="muted">{{ u.date_joined|date:"d.m.Y" }}</td>
+                        <td><div class="actions">
+                            <form action="{% url 'approve_user' u.id %}" method="post" class="inline-form">{% csrf_token %}<button class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i>{% trans "Одобрить" %}</button></form>
+                            <form action="{% url 'reject_user' u.id %}" method="post" class="inline-form" data-confirm="{% trans 'Отклонить и удалить пользователя?' %}">{% csrf_token %}<button class="btn btn-danger btn-sm">{% trans "Отклонить" %}</button></form>
+                        </div></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4"><div class="empty"><i class="bi bi-check2-circle"></i>{% trans "Новых запросов нет" %}</div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <div id="students_tab" class="tab-content active">
-        {% for student in students %}
-            <div class="glass-card">
-                <div>
-                    <h4 style="color: white; margin: 0;">{{ student.username }} {% if student.is_blocked %}<span style="color: #ef4444; font-size: 12px;">(🚫 {% trans "Заблокирован" %})</span>{% endif %}</h4>
-                    <p style="color: #94a3b8; font-size: 0.9rem; margin-top: 5px;">📧 {{ student.email }}</p>
-                </div>
-                <div class="btn-group">
-                    {% if student.resume %}
-                        <a href="{% url 'view_student_resume' student.resume.id %}" class="btn-action btn-view">👁 {% trans "Резюме" %}</a>
-                    {% endif %}
+        {% elif tab == 'students' or tab == 'employers' %}
+        <div class="row-between" style="margin-bottom: 12px;">
+            <span></span>
+            {% if tab == 'students' %}<a href="{% url 'export_csv' 'students' %}" class="btn btn-outline btn-sm"><i class="bi bi-download"></i>{% trans "Скачать Excel" %}</a>{% endif %}
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>{% trans "Пользователь" %}</th><th>{% if tab == 'students' %}{% trans "Университет" %}{% else %}{% trans "ИНН / данные" %}{% endif %}</th><th>{% trans "Регистрация" %}</th><th>{% trans "Статус" %}</th><th></th></tr></thead>
+                <tbody>
+                {% if tab == 'students' %}{% with people=students %}{% include 'Dashboard/_people_rows.html' %}{% endwith %}
+                {% else %}{% with people=employers %}{% include 'Dashboard/_people_rows.html' %}{% endwith %}{% endif %}
+                </tbody>
+            </table>
+        </div>
 
-                    <a href="{% url 'toggle_user_block' student.id %}" class="btn-action {% if student.is_blocked %}btn-unblock{% else %}btn-block{% endif %}">
-                        {% if student.is_blocked %}✅ {% trans "Разблокировать" %}{% else %}🚫 {% trans "Заблокировать" %}{% endif %}
-                    </a>
+        {% elif tab == 'jobs' %}
+        <div class="row-between" style="margin-bottom: 12px;"><span></span><a href="{% url 'export_csv' 'jobs' %}" class="btn btn-outline btn-sm"><i class="bi bi-download"></i>{% trans "Скачать Excel" %}</a></div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>{% trans "Вакансия" %}</th><th>{% trans "Категория" %}</th><th>{% trans "Отклики" %}</th><th>{% trans "Статус" %}</th><th></th></tr></thead>
+                <tbody>
+                {% for job in all_jobs %}
+                    <tr>
+                        <td><a href="{% url 'vacancy_detail' job.id %}" style="color: var(--ink); font-weight: 650;">{{ job.title }}</a><div class="small muted">{{ job.company }} · {{ job.created_at|date:"d.m.Y" }}</div></td>
+                        <td>{{ job.get_category_display }}</td>
+                        <td>{{ job.app_count }}</td>
+                        <td>{% if job.is_active %}<span class="status status-accepted">{% trans "Активна" %}</span>{% else %}<span class="status status-closed">{% trans "Закрыта" %}</span>{% endif %}</td>
+                        <td><div class="actions">
+                            <form action="{% url 'delete_job' job.id %}" method="post" class="inline-form" data-confirm="{% trans 'Удалить вакансию вместе с откликами?' %}">{% csrf_token %}<button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button></form>
+                        </div></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5"><div class="empty">{% trans "Пока нет вакансий" %}</div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                    <form id="delete-user-{{ student.id }}" action="{% url 'delete_user' student.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
-                    <button onclick="handleAction('delete', 'delete-user-{{ student.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
-                </div>
+        {% elif tab == 'broadcast' %}
+        <form action="{% url 'send_broadcast' %}" method="post" class="panel stack" style="max-width: 640px;">
+            {% csrf_token %}
+            <div><h3>{% trans "Рассылка уведомлений" %}</h3><p class="muted small">{% trans "Сообщение появится в разделе «Уведомления» у выбранных пользователей." %}</p></div>
+            <div class="field">
+                <label for="audience">{% trans "Кому" %}</label>
+                <select name="audience" id="audience">
+                    <option value="all">{% trans "Всем пользователям" %}</option>
+                    <option value="student">{% trans "Только студентам" %}</option>
+                    <option value="employer">{% trans "Только работодателям" %}</option>
+                </select>
             </div>
-        {% endfor %}
-    </div>
-
-    <div id="employers_tab" class="tab-content">
-        {% for employer in employers %}
-            <div class="glass-card">
-                <div>
-                    <h4 style="color: white; margin: 0;">{{ employer.username }} {% if employer.is_blocked %}<span style="color: #ef4444; font-size: 12px;">(🚫 {% trans "Заблокирован" %})</span>{% endif %}</h4>
-                    <p style="color: #10b981; font-size: 0.9rem; margin-top: 5px;">📩 {{ employer.email }}</p>
-                </div>
-                <div class="btn-group">
-                    <a href="{% url 'job_list' %}" class="btn-action btn-view">💼 {% trans "Вакансии" %}</a>
-
-                    <a href="{% url 'toggle_user_block' employer.id %}" class="btn-action {% if employer.is_blocked %}btn-unblock{% else %}btn-block{% endif %}">
-                        {% if employer.is_blocked %}✅ {% trans "Разблокировать" %}{% else %}🚫 {% trans "Заблокировать" %}{% endif %}
-                    </a>
-
-                    <form id="delete-user-{{ employer.id }}" action="{% url 'delete_user' employer.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
-                    <button onclick="handleAction('delete', 'delete-user-{{ employer.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
-                </div>
+            <div class="field">
+                <label for="message">{% trans "Сообщение" %}</label>
+                <textarea name="message" id="message" rows="5" required placeholder="{% trans 'Например: 15 ноября в ОшГУ пройдёт ярмарка вакансий.' %}"></textarea>
             </div>
-        {% endfor %}
+            <div><button class="btn btn-primary"><i class="bi bi-send"></i>{% trans "Отправить" %}</button></div>
+        </form>
+        {% endif %}
     </div>
-
-    <div id="jobs_tab" class="tab-content">
-        {% for job in all_jobs %}
-            <div class="glass-card">
-                <div>
-                    <h4 style="color: white; margin: 0; font-size: 1.1rem;">{{ job.title }}</h4>
-                    <small style="color: #38bdf8;">🏢 {{ job.company.username }}</small>
-                </div>
-                <div class="btn-group">
-                    <a href="{% url 'vacancy_detail' job.id %}" class="btn-action btn-view">👁 {% trans "Просмотр" %}</a>
-                    <form id="delete-job-{{ job.id }}" action="{% url 'delete_job' job.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
-                    <button onclick="handleAction('delete', 'delete-job-{{ job.id }}')" class="btn-action btn-delete">🗑 {% trans "Удалить" %}</button>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
-    <div id="requests_tab" class="tab-content">
-        {% for user in pending_users %}
-            <div class="glass-card">
-                <div>
-                    <h4 style="color: white; margin: 0;">{{ user.username }} <span style="font-size: 12px; color: #fbbf24;">({{ user.role }})</span></h4>
-                    <p style="color: #94a3b8; font-size: 13px; margin: 5px 0;">ИНН/ID: {{ user.verification_data }}</p>
-                </div>
-                <div class="btn-group">
-                    <a href="{% url 'approve_user' user.id %}" class="btn-action" style="background: #10b981; color: white;">✅ {% trans "Одобрить" %}</a>
-                    <a href="{% url 'reject_user' user.id %}" class="btn-action btn-delete">❌ {% trans "Отклонить" %}</a>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-
 </div>
-
-<script>
-    function openTab(evt, tabName) {
-        var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tab-content");
-        for (i = 0; i < tabcontent.length; i++) {
-            tabcontent[i].style.display = "none";
-            tabcontent[i].classList.remove("active");
-        }
-        tablinks = document.getElementsByClassName("tab-btn");
-        for (i = 0; i < tablinks.length; i++) {
-            tablinks[i].classList.remove("active");
-        }
-        document.getElementById(tabName).style.display = "block";
-        document.getElementById(tabName).classList.add("active");
-        evt.currentTarget.classList.add("active");
-    }
-
-    function handleAction(type, formId) {
-        let title = type === 'delete' ? '{% trans "Удалить?" %}' : '{% trans "Подтвердить?" %}';
-        let text = type === 'delete' ? '{% trans "Эти данные будут безвозвратно удалены!" %}' : '{% trans "Вы хотите выполнить это действие?" %}';
-
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#334155',
-            confirmButtonText: '{% trans "Да" %}',
-            cancelButtonText: '{% trans "Нет" %}',
-            background: '#1e293b',
-            color: '#fff'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(formId).submit();
-            }
-        });
-    }
-</script>
 {% endblock %}

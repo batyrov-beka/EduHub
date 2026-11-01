@@ -1,226 +1,83 @@
 {% extends 'base.html' %}
-
-
-    {% load i18n %}
+{% load i18n eduhub_extras %}
+{% block title %}{% trans "Мои вакансии" %}{% endblock %}
 
 {% block content %}
+<div class="page">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <h1>{% trans "Мои вакансии" %}</h1>
+                <p>{{ user.display_name }}{% if user.verification_data %} · {{ user.verification_data }}{% endif %}</p>
+            </div>
+            <a href="{% url 'post_job' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i>{% trans "Опубликовать вакансию" %}</a>
+        </div>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <div class="kpis">
+            <div class="kpi"><span><i class="bi bi-broadcast"></i>{% trans "Активные" %}</span><b>{{ stats.active }}</b></div>
+            <div class="kpi"><span><i class="bi bi-archive"></i>{% trans "Закрытые" %}</span><b>{{ stats.closed }}</b></div>
+            <div class="kpi"><span><i class="bi bi-people"></i>{% trans "Всего откликов" %}</span><b>{{ stats.applications }}</b></div>
+            <a class="kpi accent" href="{% url 'employer_dashboard' %}?status=pending" style="color: var(--ink);">
+                <span><i class="bi bi-hourglass-split"></i>{% trans "Ждут ответа" %}</span><b>{{ stats.pending }}</b>
+            </a>
+        </div>
 
-    <style>
-
-.cabinet-container {
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-.cabinet-header h2 {
-    font-size: 36px;
-    font-weight: 800;
-    color: white;
-    margin-bottom: 10px;
-}
-
-.cabinet-header p {
-    color: #94a3b8;
-    font-size: 16px;
-}
-
-
-.vacancy-section-title {
-    margin: 40px 0 25px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    font-size: 22px;
-}
-
-.status-dot {
-    width: 10px;
-    height: 10px;
-    background: var(--accent-color);
-    border-radius: 50%;
-}
-
-
-.my-job-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 25px;
-    border-radius: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: 0.3s;
-}
-
-.my-job-card:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.job-info h4 {
-    margin: 0 0 10px 0;
-    font-size: 20px;
-    color: white;
-}
-
-.job-meta {
-    display: flex;
-    gap: 15px;
-    font-size: 13px;
-}
-
-
-.action-buttons {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.btn-action {
-    padding: 10px 20px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 14px;
-    transition: 0.3s;
-    text-align: center;
-}
-
-.btn-close { background: #ef4444; color: white; }
-.btn-reopen { background: #10b981; color: white; }
-.btn-archive {
-    background: rgba(255,255,255,0.05);
-    color: #94a3b8;
-    border: 1px solid rgba(255,255,255,0.1);
-    pointer-events: none;
-}
-
-
-.empty-state {
-    text-align: center;
-    padding: 60px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 24px;
-    border: 2px dashed rgba(255,255,255,0.1);
-}
-
-
-@media (max-width: 700px) {
-    .cabinet-header h2 { font-size: 28px; }
-
-    .my-job-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-    }
-
-    .action-buttons {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .btn-action {
-        width: 100%;
-        padding: 14px;
-    }
-
-    .job-meta {
-        flex-direction: column;
-        gap: 5px;
-    }
-    .cabinet-header{
-        text-align: center;
-    }
-}
-</style>
-
-
-
-<div class="cabinet-container">
-    <div class="cabinet-header">
-        <h2 style="display: flex; justify-content: center">{% trans "Личный кабинет" %} {{ user.username }}!</h2>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Вакансия" %}</th>
+                        <th>{% trans "Статус" %}</th>
+                        <th>{% trans "Отклики" %}</th>
+                        <th>{% trans "Опубликована" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for job in user_vacancies %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'vacancy_detail' job.id %}" style="color: var(--ink); font-weight: 650;">{{ job.title }}</a>
+                            <div class="small muted">{{ job.location }} · {{ job.salary|money }}</div>
+                        </td>
+                        <td>
+                            {% if job.is_active %}<span class="status status-accepted">{% trans "Активна" %}</span>
+                            {% else %}<span class="status status-closed">{% trans "Закрыта" %}</span>{% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'employer_dashboard' %}?job={{ job.id }}">{{ job.app_count }}</a>
+                            {% if job.pending_count %}<span class="tag tag-sun">+{{ job.pending_count }} {% trans "новых" %}</span>{% endif %}
+                        </td>
+                        <td class="muted">{{ job.created_at|date:"d.m.Y" }}</td>
+                        <td>
+                            <div class="actions">
+                                <a href="{% url 'edit_vacancy' job.pk %}" class="btn btn-outline btn-sm" title="{% trans 'Редактировать' %}"><i class="bi bi-pencil"></i></a>
+                                {% if job.is_active %}
+                                    <form action="{% url 'close_vacancy' job.pk %}" method="post" class="inline-form">{% csrf_token %}
+                                        <button class="btn btn-outline btn-sm">{% trans "Закрыть" %}</button></form>
+                                {% else %}
+                                    <form action="{% url 'reopen_vacancy' job.pk %}" method="post" class="inline-form">{% csrf_token %}
+                                        <button class="btn btn-success btn-sm">{% trans "Открыть" %}</button></form>
+                                {% endif %}
+                                <form action="{% url 'delete_job' job.pk %}" method="post" class="inline-form" data-confirm="{% trans 'Удалить вакансию вместе с откликами?' %}">{% csrf_token %}
+                                    <button class="btn btn-danger btn-sm" title="{% trans 'Удалить' %}"><i class="bi bi-trash"></i></button></form>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">
+                        <div class="empty">
+                            <i class="bi bi-briefcase"></i>
+                            <h3>{% trans "У вас пока нет вакансий" %}</h3>
+                            <p>{% trans "Опубликуйте первую вакансию — студенты увидят её сразу." %}</p>
+                            <a href="{% url 'post_job' %}" class="btn btn-primary">{% trans "Опубликовать вакансию" %}</a>
+                        </div>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include 'partials/pagination.html' with page_obj=user_vacancies %}
     </div>
-
-    <div class="my-vacancies-section">
-        <h3 class="vacancy-section-title" style="display: flex; justify-content: center;color: #3b82f6">
-            <span class="status-dot"></span>
-          <i class="fa-solid fa-layer-group"></i>{% trans "Мои вакансии" %}
-        </h3>
-
-        <div style="display: grid; gap: 20px;">
-            {% for job in user_vacancies %}
-            <div class="my-job-card">
-                <div class="job-info">
-                    <h4>{{ job.title }}</h4>
-                    <div class="job-meta">
-                        <span style="color: #94a3b8;">📅 {{ job.created_at|date:"d.m.Y" }}</span>
-                        <span style="color: {% if job.is_active %}#10b981{% else %}#ef4444{% endif %}; font-weight: 700;">
-                            {% if job.is_active %} ● {% trans "Активна" %} {% else %} ● {% trans "Закрыта (В архиве)" %} {% endif %}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="action-buttons">
-                    {% if job.is_active %}
-                     <a href="{% url 'close_vacancy' job.pk %}"
-                        style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">
-                        {% trans "Закрыть" %}
-                     </a>
-                    {% else %}
-                        <span class="btn-action btn-archive">{% trans "В архиве" %}</span>
-                        <a href="{% url 'reopen_vacancy' job.pk %}" class="btn-action btn-reopen">
-                           {% trans "Опубликовать заново" %}
-                        </a>
-                    {% endif %}
-
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <a href="{% url 'edit_vacancy' job.pk %}"
-                           style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; border: 1px solid rgba(59, 130, 246, 0.2);">
-                           {% trans "Изменить" %}
-                        </a>
-                    </div>
-                </div>
-
-            </div>
-            {% empty %}
-            <div class="empty-state">
-                <p style="color: #94a3b8; font-size: 18px; margin-bottom: 15px;">{% trans "Вы еще не опубликовали ни одной вакансии." %}</p>
-                <a href="{% url 'post_job' %}" style="color: var(--accent-color); text-decoration: none; font-weight: 700; font-size: 16px;">
-                    {% trans "Опубликовать первую →" %}
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-
-        {% if user_vacancies.has_other_pages %}
-        <div class="pagination-wrapper" style="margin-top: 40px; display: flex; justify-content: center;">
-            <div class="pagination-box" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);">
-
-                {% if user_vacancies.has_previous %}
-                    <a href="?page={{ user_vacancies.previous_page_number }}"
-                       style="color: #3b82f6; text-decoration: none; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.1); border-radius: 10px; transition: 0.3s;">
-                        <i class="fa-solid fa-chevron-left"></i>
-                    </a>
-                {% endif %}
-
-                <div style="color: white; font-weight: 600; font-size: 14px; padding: 0 10px;">
-                    {{ user_vacancies.number }} / {{ user_vacancies.paginator.num_pages }}
-                </div>
-
-                {% if user_vacancies.has_next %}
-                    <a href="?page={{ user_vacancies.next_page_number }}"
-                       style="color: #3b82f6; text-decoration: none; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.1); border-radius: 10px; transition: 0.3s;">
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </a>
-                {% endif %}
-
-            </div>
-        </div>
-        {% endif %}
-        </div>
 </div>
 {% endblock %}

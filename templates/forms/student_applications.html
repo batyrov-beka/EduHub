@@ -1,128 +1,93 @@
 {% extends 'base.html' %}
+{% load i18n eduhub_extras %}
+{% block title %}{% trans "Личный кабинет" %}{% endblock %}
+
 {% block content %}
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-<style>
-    body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
-
-    .main-container { max-width: 850px; margin: 60px auto; padding: 0 20px; }
-
-    .page-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        color: #f8fafc;
-    }
-
-    .app-card {
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: all 0.3s ease;
-    }
-    .app-card:hover {
-        border-color: #38bdf8;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .info-group { display: flex; flex-direction: column; gap: 5px; }
-
-    .company-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #38bdf8;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .job-title { color: #f1f5f9; font-size: 1.2rem; font-weight: 600; margin-top: 2px; }
-    .date-text { color: #64748b; font-size: 0.85rem; margin-top: 5px; }
-
-
-    .status-badge {
-        padding: 8px 16px;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 160px;
-        justify-content: center;
-    }
-
-    .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .status-accepted { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #1e293b;
-        border-radius: 20px;
-        border: 2px dashed #334155;
-    }
-
-    @media (max-width: 650px) {
-        .app-card { flex-direction: column; align-items: flex-start; gap: 20px; }
-        .status-badge { width: 100%; }
-    }
-</style>
-{% load i18n %}
-<div class="main-container">
-    <h2 class="page-title">
-        <i class="fas fa-briefcase text-primary"></i> {% trans "Мои отклики" %}
-    </h2>
-
-    {% for app in applications %}
-    <div class="app-card">
-        <div class="info-group">
-            <div class="company-name">
-                <i class="fas fa-building small"></i> {{ app.vacancy.employer.username }}
+<div class="page">
+    <div class="container">
+        <div class="page-head">
+            <div>
+                <h1>{% blocktrans with name=user.first_name|default:user.username %}Здравствуйте, {{ name }}{% endblocktrans %}</h1>
+                <p>{% trans "Ваши отклики и их статусы" %}</p>
             </div>
-            <div class="job-title">{{ app.vacancy.title }}</div>
-            <div class="date-text">
-                <i class="far fa-calendar-alt"></i> {% trans "Дата подачи:" %} {{ app.created_at|date:"d.m.Y" }}
-            </div>
+            <a href="{% url 'vacancy_list' %}" class="btn btn-primary"><i class="bi bi-search"></i>{% trans "Искать вакансии" %}</a>
         </div>
 
-        <div class="status-container">
-            {% if app.status == 'pending' %}
-                <span class="status-badge status-pending">
-                    <i class="fas fa-clock"></i> {% trans "В ожидании" %}
-                </span>
-            {% elif app.status == 'accepted' %}
-                <span class="status-badge status-accepted">
-                    <i class="fas fa-check-circle"></i> {% trans "Приглашен(а)" %}
-                </span>
-            {% else %}
-                <span class="status-badge status-rejected">
-                    <i class="fas fa-times-circle"></i> {% trans "Отклонено" %}
-                </span>
-            {% endif %}
+        <div class="layout-sidebar">
+            <div>
+                <div class="kpis">
+                    <div class="kpi"><span>{% trans "Всего" %}</span><b>{{ counts.all }}</b></div>
+                    <div class="kpi"><span>{% trans "На рассмотрении" %}</span><b>{{ counts.pending }}</b></div>
+                    <div class="kpi"><span>{% trans "Приняты" %}</span><b style="color: var(--success);">{{ counts.accepted }}</b></div>
+                    <div class="kpi"><span>{% trans "Отклонены" %}</span><b>{{ counts.rejected }}</b></div>
+                </div>
+
+                <h2 style="font-size: 1.2rem;">{% trans "Мои отклики" %}</h2>
+                {% for app in applications %}
+                    <div class="app-card">
+                        <div class="row-between" style="align-items: flex-start;">
+                            <div class="person">
+                                <div class="logo-tile c{{ app.vacancy.company|color_index }}" style="width: 42px; height: 42px; font-size: .95rem;">{{ app.vacancy.company|initials }}</div>
+                                <div>
+                                    <b><a href="{% url 'vacancy_detail' app.vacancy.id %}" style="color: var(--ink);">{{ app.vacancy.title }}</a></b>
+                                    <small>{{ app.vacancy.company }} · {{ app.vacancy.salary|money }}</small>
+                                </div>
+                            </div>
+                            <span class="status status-{{ app.status }}">{{ app.get_status_display }}</span>
+                        </div>
+                        <div class="row-between" style="margin-top: 12px;">
+                            <span class="small muted">{% trans "Отправлено" %} {{ app.created_at|date:"d.m.Y H:i" }}</span>
+                            {% if app.status == 'pending' %}
+                                <form action="{% url 'withdraw_application' app.id %}" method="post" class="inline-form" data-confirm="{% trans 'Отозвать отклик?' %}">{% csrf_token %}
+                                    <button class="btn btn-ghost btn-sm">{% trans "Отозвать" %}</button>
+                                </form>
+                            {% elif app.status == 'accepted' %}
+                                <span class="small" style="color: var(--success); font-weight: 600;"><i class="bi bi-telephone"></i> {% trans "Ожидайте звонка:" %} {{ app.vacancy.phone }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="panel empty">
+                        <i class="bi bi-send"></i>
+                        <h3>{% trans "Вы ещё не откликались" %}</h3>
+                        <p>{% trans "Найдите подходящую вакансию и отправьте резюме в один клик." %}</p>
+                        <a href="{% url 'vacancy_list' %}" class="btn btn-primary">{% trans "Смотреть вакансии" %}</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <aside class="stack">
+                <div class="panel">
+                    <h3>{% trans "Мое резюме" %}</h3>
+                    {% if resume and resume.is_complete %}
+                        <div class="person" style="margin: 12px 0 16px;">
+                            <span class="avatar avatar-md">{% if resume.photo %}<img src="{{ resume.photo.url }}" alt="">{% else %}{{ resume.full_name|initials }}{% endif %}</span>
+                            <div><b>{{ resume.full_name }}</b><small>{{ resume.skills_list|slice:':3'|join:', ' }}</small></div>
+                        </div>
+                        <div class="row">
+                            <a href="{% url 'view_resume' %}" class="btn btn-outline btn-sm">{% trans "Открыть" %}</a>
+                            <a href="{% url 'edit_resume' %}" class="btn btn-ghost btn-sm"><i class="bi bi-pencil"></i>{% trans "Редактировать" %}</a>
+                        </div>
+                    {% else %}
+                        <p class="muted small">{% trans "Без резюме нельзя откликаться на вакансии." %}</p>
+                        <a href="{% url 'edit_resume' %}" class="btn btn-sun btn-block">{% trans "Заполнить резюме" %}</a>
+                    {% endif %}
+                </div>
+
+                {% if recommended %}
+                <div class="panel panel-tight">
+                    <h3 style="font-size: 1rem;">{% trans "Подходящие вакансии" %}</h3>
+                    <p class="small muted">{% trans "Подобраны по навыкам из вашего резюме" %}</p>
+                    {% for job in recommended %}
+                        <a class="mini-job" href="{% url 'vacancy_detail' job.id %}">
+                            <b>{{ job.title }}</b>
+                            <span class="small muted">{{ job.company }} · {{ job.salary|money }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </aside>
         </div>
     </div>
-    {% empty %}
-    <div class="empty-state">
-        <i class="fas fa-folder-open fa-3x mb-3" style="color: #334155;"></i>
-        <p class="text-secondary fs-5">{% trans "Вы еще не отправляли откликов на вакансии." %}</p>
-        <a href="{% url 'vacancy_list' %}" class="btn btn-outline-primary mt-3">{% trans "Посмотреть вакансии" %}</a>
-    </div>
-    {% endfor %}
 </div>
-
 {% endblock %}

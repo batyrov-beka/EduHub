@@ -1,237 +1,81 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n eduhub_extras %}
+{% block title %}{% trans "Отклики" %}{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-<style>
-    body { background-color: #0f172a; color: #e2e8f0; font-family: 'Inter', sans-serif; }
-
-    .dashboard-container { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
-
-    .page-title {
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin-bottom: 35px;
-        color: #f8fafc;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-    }
-
-    .page-title i { color: #38bdf8; }
-
-
-    .filter-tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 30px;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .tab-btn {
-        padding: 10px 20px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        text-decoration: none;
-        color: #94a3b8;
-        font-weight: 600;
-        transition: 0.3s;
-        font-size: 14px;
-    }
-
-    .tab-btn.active {
-        background: rgba(59, 130, 246, 0.15) !important;
-        border-color: #3b82f6 !important;
-        color: #3b82f6 !important;
-    }
-
-
-    .app-card {
-        background: rgba(30, 41, 59, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 25px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: 0.3s ease;
-    }
-
-    .app-card:hover { border-color: rgba(56, 189, 248, 0.4); transform: translateY(-2px); }
-
-    .candidate-name {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #38bdf8;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 8px;
-    }
-
-    .vacancy-name { color: #f8fafc; font-size: 1rem; margin-bottom: 5px; }
-    .vacancy-name strong { color: #38bdf8; }
-    .date-text { color: #64748b; font-size: 0.85rem; }
-
-
-    .status-pill {
-        display: inline-block;
-        padding: 6px 14px;
-        border-radius: 10px;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-    }
-
-
-    .actions-group { display: flex; flex-direction: column; gap: 10px; min-width: 160px; }
-
-    .btn-action {
-        width: 100%;
-        padding: 12px 20px;
-        border-radius: 12px;
-        font-weight: 700;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        font-size: 14px;
-        transition: 0.2s;
-    }
-
-    .btn-approve { background: #10b981; color: #0f172a; }
-    .btn-approve:hover { background: #059669; }
-    .btn-decline { background: #ef4444; color: white; }
-    .btn-decline:hover { background: #dc2626; }
-
-
-    @media (max-width: 768px) {
-        .app-card {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .actions-group {
-            width: 100%;
-            flex-direction: row;
-        }
-
-        .actions-group form { flex: 1; }
-
-        .tab-btn {
-            flex: 1;
-            text-align: center;
-            padding: 10px 5px;
-            font-size: 12px;
-        }
-
-        .page-title { font-size: 1.4rem; }
-    }
-</style>
-
-<div class="dashboard-container">
-    <h1 class="page-title">
-        <i class="fas fa-users-cog"></i>
-        <span>{% trans "Отклики на вакансии" %}</span>
-    </h1>
-
-    <div class="filter-tabs">
-        <a href="?" class="tab-btn {% if not current_status %}active{% endif %}">
-            {% trans "Все" %}
-        </a>
-        <a href="?status=pending" class="tab-btn {% if current_status == 'pending' %}active{% endif %}" style="border-color: rgba(245, 158, 11, 0.3);">
-            {% trans "Новые" %}
-        </a>
-        <a href="?status=accepted" class="tab-btn {% if current_status == 'accepted' %}active{% endif %}" style="border-color: rgba(16, 185, 129, 0.3);">
-            {% trans "Принятые" %}
-        </a>
-        <a href="?status=rejected" class="tab-btn {% if current_status == 'rejected' %}active{% endif %}" style="border-color: rgba(239, 68, 68, 0.3);">
-            {% trans "Отклоненные" %}
-        </a>
-    </div>
-
-    {% for app in applications %}
-    <div class="app-card">
-        <div class="candidate-side">
-            <span class="status-pill" style="background: rgba(255,255,255,0.05); color: {% if app.status == 'accepted' %}#10b981{% elif app.status == 'rejected' %}#ef4444{% else %}#f59e0b{% endif %}; border: 1px solid rgba(255,255,255,0.1);">
-                ● {{ app.get_status_display }}
-            </span>
-
+<div class="page">
+    <div class="container">
+        <div class="page-head">
             <div>
-                <a href="{% url 'view_student_resume' app.resume.id %}" class="candidate-name">
-                    <i class="far fa-user-circle"></i> {{ app.resume.full_name }}
-                </a>
+                <h1>{% trans "Отклики кандидатов" %}</h1>
+                <p>{% trans "Просматривайте резюме и сообщайте студентам о решении." %}</p>
             </div>
-
-            <div class="vacancy-name">
-                {% trans "Вакансия:" %} <strong>{{ app.vacancy.title }}</strong>
-            </div>
-
-            <div class="date-text">
-                <i class="far fa-clock"></i> {{ app.created_at|date:"d.m.Y | H:i" }}
-            </div>
-        </div>
-
-        <div class="actions-group">
-            {% if app.status == 'pending' %}
-                <form action="{% url 'update_status' app.id 'accepted' %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-action btn-approve">
-                        <i class="fas fa-check"></i> {% trans "Принять" %}
-                    </button>
-                </form>
-                <form action="{% url 'update_status' app.id 'rejected' %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-action btn-decline">
-                        <i class="fas fa-times"></i> {% trans "Отказать" %}
-                    </button>
-                </form>
-            {% else %}
-                <div style="color: #64748b; font-size: 0.85rem; text-align: center; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.1);">
-                    <i class="fas fa-info-circle"></i> {% trans "Обработано" %}
-                </div>
+            {% if my_jobs %}
+            <form method="get" class="row">
+                {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                <select name="job" onchange="this.form.submit()" aria-label="{% trans 'Вакансия' %}" style="min-width: 240px;">
+                    <option value="">{% trans "Все вакансии" %}</option>
+                    {% for j in my_jobs %}
+                        <option value="{{ j.id }}" {% if current_job == j.id|stringformat:'s' %}selected{% endif %}>{{ j.title }}</option>
+                    {% endfor %}
+                </select>
+            </form>
             {% endif %}
         </div>
-    </div>
-    {% empty %}
-    <div style="text-align: center; padding: 60px 20px; background: rgba(255,255,255,0.02); border-radius: 24px; border: 2px dashed rgba(255,255,255,0.1);">
-        <i class="fas fa-inbox" style="font-size: 3rem; color: #334155; margin-bottom: 20px;"></i>
-        <p style="color: #94a3b8; font-size: 1.1rem;">{% trans "Пока нет новых откликов по этому фильтру." %}</p>
-    </div>
-    {% endfor %}
 
-    {% if applications.has_other_pages %}
-    <div class="pagination-wrapper" style="margin-top: 40px; display: flex; justify-content: center; align-items: center; gap: 15px;">
-        {% if applications.has_previous %}
-            <a href="?page={{ applications.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}"
-               style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; border: 1px solid rgba(56, 189, 248, 0.2);">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-        {% endif %}
+        <nav class="tabs">
+            <a href="?{% if current_job %}job={{ current_job }}{% endif %}" class="{% if not current_status %}active{% endif %}">{% trans "Все" %} <span class="count">{{ counts.all }}</span></a>
+            <a href="?status=pending{% if current_job %}&job={{ current_job }}{% endif %}" class="{% if current_status == 'pending' %}active{% endif %}">{% trans "На рассмотрении" %} <span class="count">{{ counts.pending }}</span></a>
+            <a href="?status=accepted{% if current_job %}&job={{ current_job }}{% endif %}" class="{% if current_status == 'accepted' %}active{% endif %}">{% trans "Приняты" %} <span class="count">{{ counts.accepted }}</span></a>
+            <a href="?status=rejected{% if current_job %}&job={{ current_job }}{% endif %}" class="{% if current_status == 'rejected' %}active{% endif %}">{% trans "Отклонены" %} <span class="count">{{ counts.rejected }}</span></a>
+        </nav>
 
-        <span style="color: #f8fafc; font-weight: 700; font-size: 0.9rem; background: rgba(255,255,255,0.05); padding: 8px 16px; border-radius: 10px;">
-            {{ applications.number }} / {{ applications.paginator.num_pages }}
-        </span>
+        {% for app in applications %}
+            <div class="app-card">
+                <div class="row-between" style="align-items: flex-start;">
+                    <div class="person">
+                        <span class="avatar avatar-md">
+                            {% if app.resume.photo %}<img src="{{ app.resume.photo.url }}" alt="">{% else %}{{ app.resume.full_name|initials }}{% endif %}
+                        </span>
+                        <div>
+                            <b><a href="{% url 'view_student_resume' app.resume.id %}" style="color: var(--ink);">{{ app.resume.full_name|default:app.student.username }}</a></b>
+                            <small>{% trans "на вакансию" %} «<a href="{% url 'vacancy_detail' app.vacancy.id %}">{{ app.vacancy.title }}</a>» · {{ app.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    </div>
+                    <span class="status status-{{ app.status }}">{{ app.get_status_display }}</span>
+                </div>
+                {% if app.resume.skills_list %}
+                    <div class="skill-list" style="margin-top: 12px;">
+                        {% for s in app.resume.skills_list|slice:':6' %}<span class="tag">{{ s }}</span>{% endfor %}
+                    </div>
+                {% endif %}
+                {% if app.cover_letter %}<p class="letter">{{ app.cover_letter }}</p>{% endif %}
+                <div class="row" style="margin-top: 14px;">
+                    <a href="{% url 'view_student_resume' app.resume.id %}" class="btn btn-outline btn-sm"><i class="bi bi-file-earmark-person"></i>{% trans "Резюме" %}</a>
+                    {% if app.status != 'accepted' %}
+                    <form action="{% url 'update_status' app.id 'accepted' %}" method="post" class="inline-form">{% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button class="btn btn-success btn-sm"><i class="bi bi-check-lg"></i>{% trans "Принять" %}</button>
+                    </form>
+                    {% endif %}
+                    {% if app.status != 'rejected' %}
+                    <form action="{% url 'update_status' app.id 'rejected' %}" method="post" class="inline-form">{% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i>{% trans "Отклонить" %}</button>
+                    </form>
+                    {% endif %}
+                    {% if app.resume.phone %}<a href="tel:{{ app.resume.phone }}" class="btn btn-ghost btn-sm"><i class="bi bi-telephone"></i>{{ app.resume.phone }}</a>{% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="panel empty">
+                <i class="bi bi-inbox"></i>
+                <h3>{% trans "Откликов пока нет" %}</h3>
+                <p>{% trans "Когда студенты откликнутся на ваши вакансии, они появятся здесь." %}</p>
+            </div>
+        {% endfor %}
 
-        {% if applications.has_next %}
-            <a href="?page={{ applications.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}"
-               style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; border: 1px solid rgba(56, 189, 248, 0.2);">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        {% endif %}
+        {% include 'partials/pagination.html' with page_obj=applications %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}

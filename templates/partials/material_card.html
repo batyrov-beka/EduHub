@@ -1,0 +1,14 @@
+{% load i18n %}
+<article class="mat-card {{ extra }}">
+    {% if m.image %}
+        <div class="thumb"><img src="{{ m.image.url }}" alt="" loading="lazy"></div>
+    {% else %}
+        <div class="thumb placeholder"><i class="bi bi-journal-text"></i></div>
+    {% endif %}
+    <div class="body">
+        <span class="small muted">{{ m.created_at|date:"d.m.Y" }}</span>
+        <h3><a href="{% url 'material_detail' m.slug %}">{{ m.title }}</a></h3>
+        <p>{{ m.short_description|default:m.content|truncatechars:130 }}</p>
+        <span class="small" style="color: var(--primary); font-weight: 650;">{% trans "Читать" %}</span>
+    </div>
+</article>
