@@ -12,11 +12,11 @@ SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-only-insecure-key-change-me'
 DEBUG = os.getenv('DEBUG') == 'True'
 
 
-ALLOWED_HOSTS = ['baiysh.pythonanywhere.com', '.pythonanywhere.com', 'localhost', '127.0.0.1']
+hosts = os.getenv('ALLOWED_HOSTS')
+ALLOWED_HOSTS = hosts.split(',') if hosts else ['127.0.0.1', 'localhost']
 
 
 INSTALLED_APPS = [
-    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
