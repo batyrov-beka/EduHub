@@ -13,7 +13,7 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 
 hosts = os.getenv('ALLOWED_HOSTS')
-ALLOWED_HOSTS = hosts.split(',') if hosts else ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['baiysh.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 INSTALLED_APPS = [
