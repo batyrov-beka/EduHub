@@ -12,8 +12,7 @@ SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-only-insecure-key-change-me'
 DEBUG = os.getenv('DEBUG') == 'True'
 
 
-hosts = os.getenv('ALLOWED_HOSTS')
-ALLOWED_HOSTS = ['baiysh.pythonanywhere.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['baiysh.pythonanywhere.com', '.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 INSTALLED_APPS = [
