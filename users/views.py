@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Count
@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 
 from forms.models import Application
 from jobs.models import Job
@@ -31,6 +32,19 @@ def generate_otp():
 
 def otp_expired(created_at):
     return timezone.now() - created_at > timedelta(minutes=settings.OTP_LIFETIME_MINUTES)
+
+
+def resend_wait_seconds(created_at):
+    passed = (timezone.now() - created_at).total_seconds()
+    return max(0, int(settings.OTP_RESEND_SECONDS - passed))
+
+
+def warn_resend_wait(request, seconds):
+    messages.warning(request, _("Новый код можно запросить через %(seconds)s сек.") % {'seconds': seconds})
+
+
+def warn_too_many_attempts(request):
+    messages.error(request, _("Слишком много неверных попыток. Запросите новый код."))
 
 
 def safe_send_mail(subject, message, recipient, html_message=None):
@@ -125,7 +139,7 @@ def login_view(request):
 
 def send_registration_otp(user):
     otp = generate_otp()
-    EmailOTP.objects.update_or_create(user=user, defaults={'otp_code': otp, 'created_at': timezone.now()})
+    EmailOTP.objects.update_or_create(user=user, defaults={'otp_code': otp, 'attempts': 0, 'created_at': timezone.now()})
     if settings.DEBUG:
         print(f"[EduHub] OTP for {user.email}: {otp}")
     return send_otp_email(user.email, otp)
@@ -141,6 +155,7 @@ def register_view(request):
             user = form.save(commit=False)
             user.is_active = False
             user.is_verified = False
+            user.consent_at = timezone.now()
             user.save()
 
             sent = send_registration_otp(user)
@@ -167,10 +182,17 @@ def verify_otp(request):
 
         if not user_otp:
             messages.error(request, _("Код не найден. Отправьте код ещё раз."))
+        elif user_otp.attempts >= settings.OTP_MAX_ATTEMPTS:
+            warn_too_many_attempts(request)
         elif otp_expired(user_otp.created_at):
             messages.error(request, _("Срок действия кода истёк. Отправьте код ещё раз."))
         elif user_otp.otp_code != entered_code:
-            messages.error(request, _("Неверный код!"))
+            user_otp.attempts += 1
+            user_otp.save(update_fields=['attempts'])
+            if user_otp.attempts >= settings.OTP_MAX_ATTEMPTS:
+                warn_too_many_attempts(request)
+            else:
+                messages.error(request, _("Неверный код!"))
         else:
             user.is_active = True
             user.is_verified = user.role == 'student'
@@ -195,6 +217,12 @@ def resend_registration_otp(request):
         messages.error(request, _("Срок действия сессии истек, пожалуйста, попробуйте снова."))
         return redirect('register')
 
+    user_otp = EmailOTP.objects.filter(user=user).first()
+    wait = resend_wait_seconds(user_otp.created_at) if user_otp else 0
+    if wait:
+        warn_resend_wait(request, wait)
+        return redirect('verify_otp')
+
     if send_registration_otp(user):
         messages.success(request, _("На ваш электронный адрес отправлен новый код."))
     else:
@@ -208,6 +236,7 @@ def _start_reset(request, email):
     request.session['reset_email'] = email
     request.session['otp_time'] = timezone.now().isoformat()
     request.session['reset_verified'] = False
+    request.session['reset_attempts'] = 0
     if settings.DEBUG:
         print(f"[EduHub] Reset code for {email}: {otp}")
     return send_otp_email(email, otp, reset=True)
@@ -238,17 +267,26 @@ def password_reset_otp(request):
         server_code = request.session.get('reset_otp')
         created = request.session.get('otp_time')
 
+        attempts = request.session.get('reset_attempts', 0)
+
         expired = True
         if created:
             expired = otp_expired(timezone.datetime.fromisoformat(created))
 
-        if expired:
+        if attempts >= settings.OTP_MAX_ATTEMPTS:
+            warn_too_many_attempts(request)
+        elif expired:
             messages.error(request, _("Срок действия кода истёк. Отправьте код ещё раз."))
         elif user_code and user_code == server_code:
             request.session['reset_verified'] = True
             return redirect('custom_reset_new')
         else:
-            messages.error(request, _("Неверный код!"))
+            attempts += 1
+            request.session['reset_attempts'] = attempts
+            if attempts >= settings.OTP_MAX_ATTEMPTS:
+                warn_too_many_attempts(request)
+            else:
+                messages.error(request, _("Неверный код!"))
 
     return render(request, 'password/password_reset_otp.html', {'email': request.session.get('reset_email')})
 
@@ -257,6 +295,13 @@ def resend_otp(request):
     email = request.session.get('reset_email')
     if not email:
         return redirect('custom_reset_form')
+
+    created = request.session.get('otp_time')
+    wait = resend_wait_seconds(timezone.datetime.fromisoformat(created)) if created else 0
+    if wait:
+        warn_resend_wait(request, wait)
+        return redirect('custom_reset_otp')
+
     if _start_reset(request, email):
         messages.success(request, _("На ваш электронный адрес отправлен новый код."))
     else:
@@ -299,3 +344,30 @@ def account_settings(request):
     else:
         form = ProfileForm(instance=request.user)
     return render(request, 'users/account_settings.html', {'form': form})
+
+
+@require_POST
+@login_required
+def delete_account(request):
+    user = request.user
+    if user.is_superuser:
+        messages.error(request, _("Аккаунт администратора нельзя удалить здесь."))
+        return redirect('account_settings')
+    if not user.check_password(request.POST.get('password', '')):
+        messages.error(request, _("Неверный пароль."))
+        return redirect('account_settings')
+
+    resume = getattr(user, 'resume', None)
+    if resume and resume.photo:
+        resume.photo.delete(save=False)
+    if user.profile_picture:
+        user.profile_picture.delete(save=False)
+
+    logout(request)
+    user.delete()
+    messages.success(request, _("Ваш аккаунт и ваши данные удалены."))
+    return redirect('home')
+
+
+def privacy_policy(request):
+    return render(request, 'users/privacy.html', {'contact_email': settings.EMAIL_HOST_USER})

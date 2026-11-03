@@ -13,4 +13,6 @@ urlpatterns = [
     path('auth/resend-code/', views.resend_otp, name='resend_otp'),
     path('auth/set-new-pass/', views.password_reset_new, name='custom_reset_new'),
     path('account/settings/', views.account_settings, name='account_settings'),
+    path('account/delete/', views.delete_account, name='delete_account'),
+    path('privacy/', views.privacy_policy, name='privacy'),
 ]

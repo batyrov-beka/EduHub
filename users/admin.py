@@ -30,7 +30,9 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         ('Кошумча маалымат', {'fields': ('role', 'university', 'phone', 'profile_picture')}),
         ('Текшерүү статусу', {'fields': ('is_verified', 'is_blocked', 'verification_data')}),
+        ('Жеке маалыматка макулдук', {'fields': ('consent_at',)}),
     )
+    readonly_fields = ['consent_at']
 
     @admin.display(description='Ролу', ordering='role')
     def role_badge(self, obj):

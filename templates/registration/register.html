@@ -41,6 +41,14 @@
                 {% include 'partials/field.html' with field=form.password1 %}
                 {% include 'partials/field.html' with field=form.password2 %}
 
+                <div class="consent-field {% if form.consent.errors %}has-error{% endif %}">
+                    <label class="consent-check">
+                        {{ form.consent }}
+                        <span>{{ form.consent.label }} (<a href="{% url 'privacy' %}" target="_blank" rel="noopener">{% trans "Политика конфиденциальности" %}</a>) <span class="req">*</span></span>
+                    </label>
+                    {% for error in form.consent.errors %}<div class="error">{{ error }}</div>{% endfor %}
+                </div>
+
                 <button type="submit" class="btn btn-primary btn-lg btn-block">{% trans "Создать аккаунт" %}</button>
             </form>
             <p class="auth-foot">{% trans "Уже есть аккаунт?" %} <a href="{% url 'login' %}">{% trans "Войти" %}</a></p>

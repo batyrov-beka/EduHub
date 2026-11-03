@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 class VerificationMiddleware:
 
-    ALLOWED_PARTS = ('/admin/', '/static/', '/media/', '/i18n/', '/logout/', '/waiting-approval/')
+    ALLOWED_PARTS = ('/admin/', '/static/', '/media/', '/i18n/', '/logout/', '/waiting-approval/', '/privacy/', '/account/')
 
     def __init__(self, get_response):
         self.get_response = get_response
