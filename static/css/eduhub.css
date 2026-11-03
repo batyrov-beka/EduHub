@@ -660,3 +660,16 @@ table.table { width: 100%; border-collapse: collapse; font-size: .92rem; }
     .cv-actions { justify-content: center; }
     .cv-side { order: -1; }
 }
+
+/* Жеке маалыматка макулдук жана аккаунтту өчүрүү */
+.consent-field { display: flex; flex-direction: column; gap: 6px; font-size: .9rem; }
+.consent-check { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.consent-check input { flex: none; width: 18px; height: 18px; margin-top: 2px; }
+.consent-field a { font-weight: 600; text-decoration: underline; }
+.consent-field .req { color: var(--danger); }
+.danger-panel { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.danger-panel h2 { margin: 0; font-size: 1.1rem; color: var(--danger); }
+.danger-panel p { margin: 0; }
+.danger-panel .field { width: 100%; }
+.privacy-text h2 { font-size: 1.1rem; margin: 22px 0 8px; }
+.privacy-text p { margin: 0 0 10px; line-height: 1.6; }

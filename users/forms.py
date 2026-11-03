@@ -18,6 +18,11 @@ class SignUpForm(UserCreationForm):
             'rows': 2,
         }),
     )
+    consent = forms.BooleanField(
+        required=True,
+        label=_("Я прочитал(а) политику конфиденциальности и согласен(на) на обработку моих персональных данных"),
+        error_messages={'required': _("Чтобы зарегистрироваться, нужно дать согласие на обработку персональных данных.")},
+    )
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser

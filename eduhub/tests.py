@@ -1,6 +1,13 @@
+import os
+import tempfile
+from datetime import timedelta
+
+from django.conf import settings
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from Dashboard.models import Notification
 from forms.models import Application, Resume
@@ -24,7 +31,8 @@ def make_job(employer, **extra):
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
-                   TELEGRAM_BOT_TOKEN=None, LANGUAGE_CODE='ru')
+                   TELEGRAM_BOT_TOKEN=None, LANGUAGE_CODE='ru', SECURE_SSL_REDIRECT=False,
+                   SESSION_COOKIE_SECURE=False, CSRF_COOKIE_SECURE=False)
 class BaseTestCase(TestCase):
     def setUp(self):
         self.student = make_user('student1', 'student', first_name='Айбек')
@@ -43,7 +51,7 @@ class RegistrationTests(BaseTestCase):
     def test_student_registration_with_otp(self):
         response = self.client.post(reverse('register'), {
             'username': 'newstudent', 'email': 'new@test.kg', 'role': 'student',
-            'password1': PASSWORD, 'password2': PASSWORD,
+            'password1': PASSWORD, 'password2': PASSWORD, 'consent': 'on',
         })
         self.assertRedirects(response, reverse('verify_otp'))
         user = CustomUser.objects.get(username='newstudent')
@@ -63,7 +71,7 @@ class RegistrationTests(BaseTestCase):
     def test_duplicate_email_rejected(self):
         response = self.client.post(reverse('register'), {
             'username': 'x', 'email': 'student1@test.kg', 'role': 'student',
-            'password1': PASSWORD, 'password2': PASSWORD,
+            'password1': PASSWORD, 'password2': PASSWORD, 'consent': 'on',
         })
         self.assertEqual(response.status_code, 200)
         self.assertFalse(CustomUser.objects.filter(username='x').exists())
@@ -71,7 +79,7 @@ class RegistrationTests(BaseTestCase):
     def test_employer_must_give_company_data(self):
         response = self.client.post(reverse('register'), {
             'username': 'comp', 'email': 'comp@test.kg', 'role': 'employer',
-            'password1': PASSWORD, 'password2': PASSWORD,
+            'password1': PASSWORD, 'password2': PASSWORD, 'consent': 'on',
         })
         self.assertEqual(response.status_code, 200)
         self.assertFalse(CustomUser.objects.filter(username='comp').exists())
@@ -223,3 +231,137 @@ class PagesSmokeTests(BaseTestCase):
         self.login(self.employer)
         for name in ('profile', 'employer_dashboard', 'post_job'):
             self.assertEqual(self.client.get(reverse(name)).status_code, 200, name)
+
+
+class ConsentTests(BaseTestCase):
+    def signup(self, **extra):
+        data = {'username': 'cs', 'email': 'cs@test.kg', 'role': 'student',
+                'password1': PASSWORD, 'password2': PASSWORD}
+        data.update(extra)
+        return self.client.post(reverse('register'), data)
+
+    def test_registration_requires_consent(self):
+        response = self.signup()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('consent', response.context['form'].errors)
+        self.assertFalse(CustomUser.objects.filter(username='cs').exists())
+
+    def test_consent_time_is_saved(self):
+        self.signup(consent='on')
+        self.assertIsNotNone(CustomUser.objects.get(username='cs').consent_at)
+
+    def test_privacy_page_opens_in_both_languages(self):
+        for language in ('ru', 'ky'):
+            response = self.client.get(f'/{language}/privacy/')
+            self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Купуялуулук саясаты')
+
+    def test_unverified_employer_can_open_privacy(self):
+        self.employer.is_verified = False
+        self.employer.save()
+        self.login(self.employer)
+        self.assertTemplateUsed(self.client.get(reverse('privacy')), 'users/privacy.html')
+
+
+class OtpLimitTests(BaseTestCase):
+    def start_registration(self):
+        self.client.post(reverse('register'), {
+            'username': 'otpuser', 'email': 'otp@test.kg', 'role': 'student',
+            'password1': PASSWORD, 'password2': PASSWORD, 'consent': 'on',
+        })
+        return CustomUser.objects.get(username='otpuser')
+
+    def wrong(self, code):
+        return '000000' if code != '000000' else '111111'
+
+    def test_correct_code_rejected_after_too_many_attempts(self):
+        user = self.start_registration()
+        otp = EmailOTP.objects.get(user=user)
+        for _ in range(settings.OTP_MAX_ATTEMPTS):
+            self.client.post(reverse('verify_otp'), {'otp': self.wrong(otp.otp_code)})
+        self.client.post(reverse('verify_otp'), {'otp': otp.otp_code})
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+
+    def test_resend_is_limited_then_resets_attempts(self):
+        user = self.start_registration()
+        first = EmailOTP.objects.get(user=user)
+        self.client.post(reverse('verify_otp'), {'otp': self.wrong(first.otp_code)})
+        self.client.get(reverse('resend_registration_otp'))
+        self.assertEqual(len(mail.outbox), 1)
+
+        EmailOTP.objects.filter(user=user).update(
+            created_at=timezone.now() - timedelta(seconds=settings.OTP_RESEND_SECONDS + 1))
+        self.client.get(reverse('resend_registration_otp'))
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(EmailOTP.objects.get(user=user).attempts, 0)
+
+    def test_password_reset_code_locks_after_too_many_attempts(self):
+        self.client.post(reverse('custom_reset_form'), {'email': self.student.email})
+        code = self.client.session['reset_otp']
+        for _ in range(settings.OTP_MAX_ATTEMPTS):
+            self.client.post(reverse('custom_reset_otp'), {'otp_code': self.wrong(code)})
+        response = self.client.post(reverse('custom_reset_otp'), {'otp_code': code})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(self.client.session['reset_verified'])
+
+    def test_password_reset_correct_code_still_works(self):
+        self.client.post(reverse('custom_reset_form'), {'email': self.student.email})
+        code = self.client.session['reset_otp']
+        self.client.post(reverse('custom_reset_otp'), {'otp_code': self.wrong(code)})
+        response = self.client.post(reverse('custom_reset_otp'), {'otp_code': code})
+        self.assertRedirects(response, reverse('custom_reset_new'))
+
+
+class DeleteAccountTests(BaseTestCase):
+    def test_wrong_password_keeps_account(self):
+        self.login(self.student)
+        self.client.post(reverse('delete_account'), {'password': 'wrong'})
+        self.assertTrue(CustomUser.objects.filter(pk=self.student.pk).exists())
+
+    def test_student_deletes_account_and_resume(self):
+        Application.objects.create(vacancy=self.job, student=self.student, resume=self.resume)
+        self.login(self.student)
+        self.client.post(reverse('delete_account'), {'password': PASSWORD})
+        self.assertFalse(CustomUser.objects.filter(pk=self.student.pk).exists())
+        self.assertFalse(Resume.objects.filter(pk=self.resume.pk).exists())
+        self.assertFalse(Application.objects.exists())
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_uploaded_photos_are_removed_from_disk(self):
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            self.resume.photo = SimpleUploadedFile('r.jpg', b'x')
+            self.resume.save()
+            self.student.profile_picture = SimpleUploadedFile('p.jpg', b'x')
+            self.student.save()
+            paths = [self.resume.photo.path, self.student.profile_picture.path]
+            self.assertTrue(all(os.path.exists(path) for path in paths))
+
+            self.login(self.student)
+            self.client.post(reverse('delete_account'), {'password': PASSWORD})
+            self.assertFalse(any(os.path.exists(path) for path in paths))
+
+    def test_get_does_not_delete(self):
+        self.login(self.student)
+        self.assertEqual(self.client.get(reverse('delete_account')).status_code, 405)
+        self.assertTrue(CustomUser.objects.filter(pk=self.student.pk).exists())
+
+    def test_admin_cannot_delete_self_here(self):
+        self.login(self.admin)
+        self.client.post(reverse('delete_account'), {'password': PASSWORD})
+        self.assertTrue(CustomUser.objects.filter(pk=self.admin.pk).exists())
+
+    def test_anonymous_is_redirected_to_login(self):
+        response = self.client.post(reverse('delete_account'), {'password': PASSWORD})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response['Location'])
+
+
+class HttpsTests(BaseTestCase):
+    @override_settings(SECURE_SSL_REDIRECT=True, SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https'))
+    def test_http_redirects_and_proxied_https_does_not(self):
+        url = reverse('privacy')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response['Location'].startswith('https://'))
+        self.assertEqual(self.client.get(url, headers={'x-forwarded-proto': 'https'}).status_code, 200)

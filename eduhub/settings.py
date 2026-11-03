@@ -122,5 +122,14 @@ TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 TELEGRAM_CHANNEL_URL = os.getenv('TELEGRAM_CHANNEL_URL', 'https://t.me/eduhub_kg_jobs').strip()
 
 OTP_LIFETIME_MINUTES = 10
+OTP_MAX_ATTEMPTS = 5
+OTP_RESEND_SECONDS = 60
+
+USE_HTTPS = os.getenv('USE_HTTPS', 'False' if DEBUG else 'True') == 'True'
+if USE_HTTPS:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

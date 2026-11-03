@@ -24,6 +24,23 @@
                 <button type="submit" class="btn btn-primary">{% trans "Сохранить" %}</button>
             </div>
         </form>
+
+        {% if not user.is_superuser %}
+        <form method="post" action="{% url 'delete_account' %}" class="panel danger-panel" novalidate>
+            {% csrf_token %}
+            <h2>{% trans "Удаление аккаунта" %}</h2>
+            {% if user.role == 'employer' %}
+            <p>{% trans "Будут безвозвратно удалены ваш профиль, вакансии и полученные на них отклики." %}</p>
+            {% else %}
+            <p>{% trans "Будут безвозвратно удалены ваш профиль, резюме, отклики, вопросы и ответы на форуме." %}</p>
+            {% endif %}
+            <div class="field">
+                <label for="delete-password">{% trans "Подтвердите пароль" %}</label>
+                <input type="password" id="delete-password" name="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-danger">{% trans "Удалить аккаунт" %}</button>
+        </form>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

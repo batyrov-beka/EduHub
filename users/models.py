@@ -22,6 +22,7 @@ class CustomUser(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_blocked = models.BooleanField(default=False)
     verification_data = models.TextField(blank=True, null=True, verbose_name="Маалыматтар (ИНН/Компания)")
+    consent_at = models.DateTimeField(null=True, blank=True, verbose_name="Жеке маалыматка макулдук берилген убакыт")
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
@@ -56,6 +57,7 @@ class EmailOTP(models.Model):
         related_name='email_otp'
     )
     otp_code = models.CharField(max_length=6)
+    attempts = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

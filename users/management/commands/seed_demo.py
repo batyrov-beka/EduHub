@@ -85,7 +85,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--reset', action='store_true',
-                            help='Мурунку вакансияларды, арыздарды жана форумду өчүрүү')
+                            help='Мурунку вакансияларды, өтүнмөлөрдү жана форумду өчүрүү')
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -162,5 +162,5 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f'Даяр! Иш берүүчүлөр: {len(employers)}, студенттер: {len(students)}, '
-            f'вакансиялар: {len(jobs)}, жаңы арыздар: {created_apps}. Сырсөз: {PASSWORD}'
+            f'вакансиялар: {len(jobs)}, жаңы өтүнмөлөр: {created_apps}. Сырсөз: {PASSWORD}'
         ))
