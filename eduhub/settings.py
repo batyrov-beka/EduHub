@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent.parent / '.env', override=True)
 
 
 
@@ -56,6 +56,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'Dashboard.context_processors.notifications',
+                'Dashboard.context_processors.telegram_channel',
             ],
         },
     },
@@ -107,8 +108,8 @@ LOGOUT_ON_GET = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASS')
+EMAIL_HOST_USER = (os.getenv('EMAIL_USER') or '').strip()
+EMAIL_HOST_PASSWORD = (os.getenv('EMAIL_PASS') or '').replace(' ', '')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'EduHub <noreply@eduhub.kg>'
 
 # Почта жөндөлбөсө (EMAIL_PASS жок), каттар консолго чыгат — локалдык иштөө үчүн ыңгайлуу.
@@ -121,6 +122,8 @@ else:
 SITE_URL = os.getenv('SITE_URL', 'https://baiysh.pythonanywhere.com')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+# Каналга жазылуу шилтемеси (мис.: https://t.me/eduhub_jobs). Бош болсо баскыч көрүнбөйт
+TELEGRAM_CHANNEL_URL = os.getenv('TELEGRAM_CHANNEL_URL', '').strip()
 
 # OTP кодунун жарактуу мөөнөтү (мүнөт)
 OTP_LIFETIME_MINUTES = 10

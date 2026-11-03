@@ -192,6 +192,7 @@
                     <li><a href="{% url 'vacancy_list' %}?job_type=Internship">{% trans "Стажировки" %}</a></li>
                     <li><a href="{% url 'material_list' %}">{% trans "Материалы" %}</a></li>
                     <li><a href="{% url 'question_list' %}">{% trans "Форум" %}</a></li>
+                    {% if TELEGRAM_CHANNEL_URL %}<li><a href="{{ TELEGRAM_CHANNEL_URL }}" target="_blank" rel="noopener"><i class="bi bi-telegram"></i> {% trans "Вакансии в Telegram" %}</a></li>{% endif %}
                 </ul>
             </div>
             <div>

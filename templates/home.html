@@ -154,6 +154,20 @@
 </section>
 {% endif %}
 
+{% if TELEGRAM_CHANNEL_URL %}
+<section class="container" style="padding-bottom: 20px;">
+    <div class="cta-band">
+        <div>
+            <h2><i class="bi bi-telegram"></i> {% trans "Новые вакансии — прямо в Telegram" %}</h2>
+            <p>{% trans "Подпишитесь на канал EduHub Jobs, чтобы не пропустить новые вакансии и стажировки." %}</p>
+        </div>
+        <div class="row">
+            <a href="{{ TELEGRAM_CHANNEL_URL }}" target="_blank" rel="noopener" class="btn btn-sun btn-lg"><i class="bi bi-telegram"></i> {% trans "Подписаться" %}</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
 {% if not user.is_authenticated %}
 <section class="container" style="padding-bottom: 20px;">
     <div class="cta-band">
