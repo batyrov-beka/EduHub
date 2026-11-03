@@ -1,0 +1,14 @@
+{% extends "admin/index.html" %}
+{% block content %}
+{% if eduhub_stats %}
+<div class="eh-stats">
+    {% for s in eduhub_stats %}
+    <a class="eh-stat eh-stat-{{ s.tone }}" href="{{ s.url }}">
+        <span class="eh-stat-value">{{ s.value }}</span>
+        <span class="eh-stat-label">{{ s.label }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

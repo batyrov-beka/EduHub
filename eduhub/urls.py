@@ -4,6 +4,10 @@ from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.static import serve
 
+from eduhub import admin_site
+
+admin_site.setup()
+
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
 ]

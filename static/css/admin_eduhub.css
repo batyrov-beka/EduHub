@@ -1,0 +1,264 @@
+/* EduHub админ панелинин дизайны (Django admin'дин өзгөрмөлөрүн алмаштырат) */
+:root, html[data-theme="light"] {
+    --primary: #1F4FD8;
+    --secondary: #1638A3;
+    --accent: #F2B705;
+    --primary-fg: #fff;
+
+    --body-fg: #14213D;
+    --body-bg: #F4F6FA;
+    --body-quiet-color: #5F6C84;
+    --body-medium-color: #33415C;
+    --body-loud-color: #0B1530;
+
+    --header-color: #ffffff;
+    --header-branding-color: #ffffff;
+    --header-bg: #14213D;
+    --header-link-color: #E8EEFD;
+
+    --breadcrumbs-fg: #5F6C84;
+    --breadcrumbs-link-fg: #1F4FD8;
+    --breadcrumbs-bg: transparent;
+
+    --link-fg: #1F4FD8;
+    --link-hover-color: #1638A3;
+    --link-selected-fg: #1638A3;
+
+    --hairline-color: #E1E6EF;
+    --border-color: #CDD5E2;
+    --darkened-bg: #F8FAFD;
+    --selected-bg: #E8EEFD;
+    --selected-row: #FFF6D6;
+
+    --button-fg: #fff;
+    --button-bg: #1F4FD8;
+    --button-hover-bg: #1638A3;
+    --default-button-bg: #14213D;
+    --default-button-hover-bg: #1F4FD8;
+    --close-button-bg: #5F6C84;
+    --close-button-hover-bg: #33415C;
+    --delete-button-bg: #C8332B;
+    --delete-button-hover-bg: #A82820;
+
+    --object-tools-fg: #fff;
+    --object-tools-bg: #5F6C84;
+    --object-tools-hover-bg: #1F4FD8;
+
+    --message-success-bg: #E3F4EC;
+    --message-warning-bg: #FFF1D6;
+    --message-error-bg: #FCE8E6;
+    --error-fg: #C8332B;
+
+    --eh-card: #FFFFFF;
+    --eh-shadow: 0 1px 2px rgba(20,33,61,.05), 0 6px 24px -12px rgba(20,33,61,.18);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --primary: #3B6BEA;
+        --secondary: #2A55C8;
+        --accent: #F2B705;
+        --body-fg: #E6EAF3;
+        --body-bg: #0E1424;
+        --body-quiet-color: #9AA6BF;
+        --body-medium-color: #C3CCDF;
+        --body-loud-color: #FFFFFF;
+        --header-bg: #0A0F1D;
+        --breadcrumbs-fg: #9AA6BF;
+        --breadcrumbs-link-fg: #8FB0FF;
+        --link-fg: #8FB0FF;
+        --link-hover-color: #BFD1FF;
+        --link-selected-fg: #BFD1FF;
+        --hairline-color: #232C45;
+        --border-color: #2F3A58;
+        --darkened-bg: #151C30;
+        --selected-bg: #1B2745;
+        --selected-row: #2A2A14;
+        --button-bg: #3B6BEA;
+        --button-hover-bg: #2A55C8;
+        --default-button-bg: #26324F;
+        --default-button-hover-bg: #3B6BEA;
+        --object-tools-bg: #26324F;
+        --object-tools-hover-bg: #3B6BEA;
+        --message-success-bg: #0F2A20;
+        --message-warning-bg: #33280B;
+        --message-error-bg: #35130F;
+        --error-fg: #FF8A80;
+        --eh-card: #151C30;
+        --eh-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px -12px rgba(0,0,0,.6);
+    }
+}
+html[data-theme="dark"] {
+    --primary: #3B6BEA;
+    --secondary: #2A55C8;
+    --accent: #F2B705;
+    --body-fg: #E6EAF3;
+    --body-bg: #0E1424;
+    --body-quiet-color: #9AA6BF;
+    --body-medium-color: #C3CCDF;
+    --body-loud-color: #FFFFFF;
+    --header-bg: #0A0F1D;
+    --breadcrumbs-fg: #9AA6BF;
+    --breadcrumbs-link-fg: #8FB0FF;
+    --link-fg: #8FB0FF;
+    --link-hover-color: #BFD1FF;
+    --link-selected-fg: #BFD1FF;
+    --hairline-color: #232C45;
+    --border-color: #2F3A58;
+    --darkened-bg: #151C30;
+    --selected-bg: #1B2745;
+    --selected-row: #2A2A14;
+    --button-bg: #3B6BEA;
+    --button-hover-bg: #2A55C8;
+    --default-button-bg: #26324F;
+    --default-button-hover-bg: #3B6BEA;
+    --object-tools-bg: #26324F;
+    --object-tools-hover-bg: #3B6BEA;
+    --message-success-bg: #0F2A20;
+    --message-warning-bg: #33280B;
+    --message-error-bg: #35130F;
+    --error-fg: #FF8A80;
+    --eh-card: #151C30;
+    --eh-shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px -12px rgba(0,0,0,.6);
+}
+
+body, html { font-family: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+
+/* ---------- Шапка ---------- */
+#header {
+    background: var(--header-bg);
+    border-bottom: 3px solid var(--accent);
+    padding: 12px 24px;
+    align-items: center;
+}
+.eh-brand { display: inline-flex; align-items: center; gap: 12px; color: #fff !important; text-decoration: none; }
+.eh-mark {
+    width: 34px; height: 34px; border-radius: 10px; flex: none;
+    background: linear-gradient(135deg, #3B6BEA 0%, #1F4FD8 55%, #F2B705 56%, #F2B705 100%);
+    box-shadow: 0 4px 14px -4px rgba(59,107,234,.7);
+}
+.eh-brand-text { font-size: 20px; font-weight: 700; letter-spacing: -.01em; color: #fff; }
+.eh-brand-text small { font-weight: 500; font-size: 13px; opacity: .7; margin-left: 6px; letter-spacing: 0; }
+#site-name { margin: 0; }
+#user-tools { font-size: 13px; text-transform: none; letter-spacing: 0; }
+#user-tools a { border-bottom-color: rgba(255,255,255,.25); }
+#user-tools a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.breadcrumbs { padding: 14px 24px; font-size: 13px; }
+
+/* ---------- Негизги аймак ---------- */
+#content { padding: 8px 24px 40px; }
+#content h1 { font-size: 26px; font-weight: 700; letter-spacing: -.01em; color: var(--body-loud-color); margin: 6px 0 18px; }
+.dashboard #content h1 { display: none; }
+
+/* ---------- Статистика карточкалары ---------- */
+.eh-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px; margin: 4px 0 26px;
+}
+.eh-stat {
+    display: flex; flex-direction: column; gap: 4px;
+    background: var(--eh-card); border: 1px solid var(--hairline-color);
+    border-left: 5px solid var(--primary);
+    border-radius: 14px; padding: 16px 18px; text-decoration: none;
+    box-shadow: var(--eh-shadow); transition: transform .15s ease, box-shadow .15s ease;
+}
+.eh-stat:hover { transform: translateY(-2px); }
+.eh-stat-value { font-size: 32px; font-weight: 700; line-height: 1; color: var(--body-loud-color); }
+.eh-stat-label { font-size: 13px; color: var(--body-quiet-color); font-weight: 500; }
+.eh-stat-yellow { border-left-color: #F2B705; }
+.eh-stat-green { border-left-color: #12805C; }
+.eh-stat-blue { border-left-color: #1F4FD8; }
+
+/* ---------- Модулдар (таблицалар) ---------- */
+.module {
+    background: var(--eh-card); border: 1px solid var(--hairline-color);
+    border-radius: 14px; overflow: hidden; box-shadow: var(--eh-shadow); margin-bottom: 22px;
+}
+.module h2, .module caption, .inline-group h2 {
+    background: var(--header-bg); color: #fff; font-weight: 600; font-size: 13px;
+    letter-spacing: .04em; text-transform: uppercase; padding: 11px 16px;
+}
+.module h2 a, .module caption a { color: #fff; }
+.module h2 a:hover, .module caption a:hover { color: var(--accent); }
+.module th, .module td { padding: 10px 16px; }
+.dashboard .module table { width: 100%; table-layout: auto; }
+.dashboard .module th { width: 55%; word-break: normal; overflow-wrap: normal; }
+.dashboard #content-main { max-width: 720px; }
+.dashboard .eh-stats { max-width: 980px; }
+.dashboard .module tr:hover { background: var(--selected-bg); }
+.dashboard .module th a { font-weight: 600; }
+.addlink, .changelink { font-weight: 500; }
+#content-related .module { box-shadow: var(--eh-shadow); }
+
+/* ---------- Тизмелер (changelist) ---------- */
+#changelist { border-radius: 14px; }
+#changelist .results { border: 1px solid var(--hairline-color); border-radius: 14px; overflow: hidden; background: var(--eh-card); box-shadow: var(--eh-shadow); }
+#changelist table thead th { background: var(--darkened-bg); border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 11.5px; letter-spacing: .05em; color: var(--body-quiet-color); }
+#changelist table thead th a { color: var(--body-quiet-color); }
+#result_list tbody tr:hover { background: var(--selected-bg); }
+#changelist-filter {
+    background: var(--eh-card); border: 1px solid var(--hairline-color);
+    border-radius: 14px; box-shadow: var(--eh-shadow); overflow: hidden;
+}
+#changelist-filter h2 { background: var(--header-bg); color: #fff; }
+#changelist-filter li.selected { border-left-color: var(--accent); }
+#toolbar { background: var(--eh-card); border: 1px solid var(--hairline-color); border-radius: 12px; padding: 10px 12px; box-shadow: var(--eh-shadow); }
+.actions { background: var(--darkened-bg); border-radius: 12px; }
+
+/* ---------- Формалар ---------- */
+fieldset.module { background: var(--eh-card); }
+.form-row { padding: 12px 16px; }
+input[type=text], input[type=password], input[type=email], input[type=url], input[type=number],
+input[type=tel], textarea, select, .vTextField {
+    border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 10px;
+    background: var(--body-bg); color: var(--body-fg); font-family: inherit;
+}
+input:focus, textarea:focus, select:focus {
+    outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary);
+}
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    border-radius: 10px; font-weight: 600; font-family: inherit; padding: 10px 18px;
+}
+.submit-row { background: var(--eh-card); border: 1px solid var(--hairline-color); border-radius: 14px; box-shadow: var(--eh-shadow); }
+.object-tools a { border-radius: 999px; font-weight: 600; text-transform: none; letter-spacing: 0; padding: 6px 16px; }
+
+/* ---------- Билдирүүлөр ---------- */
+ul.messagelist li { border-radius: 12px; margin-bottom: 8px; font-weight: 500; }
+
+/* ---------- Белгилер (badge) ---------- */
+.eh-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; line-height: 1.5; white-space: nowrap;
+}
+.eh-badge-green { background: #E3F4EC; color: #0B6B4C; }
+.eh-badge-yellow { background: #FFF1D6; color: #8A5800; }
+.eh-badge-red { background: #FCE8E6; color: #B3261E; }
+.eh-badge-blue { background: #E8EEFD; color: #1638A3; }
+.eh-badge-gray { background: #EEF1F6; color: #33415C; }
+.eh-badge-dark { background: #14213D; color: #fff; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .eh-badge-green { background: #0F2A20; color: #6FE0B5; }
+    :root:not([data-theme="light"]) .eh-badge-yellow { background: #33280B; color: #F5C451; }
+    :root:not([data-theme="light"]) .eh-badge-red { background: #35130F; color: #FF9A92; }
+    :root:not([data-theme="light"]) .eh-badge-blue { background: #1B2745; color: #9DB8FF; }
+    :root:not([data-theme="light"]) .eh-badge-gray { background: #232C45; color: #C3CCDF; }
+    :root:not([data-theme="light"]) .eh-badge-dark { background: #3B6BEA; }
+}
+html[data-theme="dark"] .eh-badge-green { background: #0F2A20; color: #6FE0B5; }
+html[data-theme="dark"] .eh-badge-yellow { background: #33280B; color: #F5C451; }
+html[data-theme="dark"] .eh-badge-red { background: #35130F; color: #FF9A92; }
+html[data-theme="dark"] .eh-badge-blue { background: #1B2745; color: #9DB8FF; }
+html[data-theme="dark"] .eh-badge-gray { background: #232C45; color: #C3CCDF; }
+html[data-theme="dark"] .eh-badge-dark { background: #3B6BEA; }
+
+/* ---------- Телефон ---------- */
+@media (max-width: 767px) {
+    #header { padding: 10px 14px; }
+    #content { padding: 4px 12px 32px; }
+    .eh-brand-text { font-size: 18px; }
+    .eh-brand-text small { display: none; }
+    .eh-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .eh-stat { padding: 12px 14px; }
+    .eh-stat-value { font-size: 26px; }
+}

@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="{% static 'css/admin_eduhub.css' %}?v=1">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+    <a href="{% url 'admin:index' %}" class="eh-brand">
+        <span class="eh-mark" aria-hidden="true"></span>
+        <span class="eh-brand-text">{{ site_header|default:"EduHub" }} <small>Башкаруу</small></span>
+    </a>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
