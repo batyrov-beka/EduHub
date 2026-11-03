@@ -6,10 +6,11 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.db.models import Count
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 
@@ -33,14 +34,47 @@ def otp_expired(created_at):
     return timezone.now() - created_at > timedelta(minutes=settings.OTP_LIFETIME_MINUTES)
 
 
-def safe_send_mail(subject, message, recipient):
+def safe_send_mail(subject, message, recipient, html_message=None):
     """Кат жөнөтүү. Ката болсо сайт кулабайт, логго жазылат."""
     try:
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient], fail_silently=False)
+        email = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient])
+        if html_message:
+            email.attach_alternative(html_message, 'text/html')
+        email.send(fail_silently=False)
         return True
     except Exception as exc:  # SMTP ката, интернет жок ж.б.
         logger.warning("Email error (%s): %s", recipient, exc)
         return False
+
+
+def send_otp_email(recipient, otp, reset=False):
+    """Тастыктоо кодун кооз жана коопсуздук эскертүүсү менен жөнөтүү."""
+    minutes = settings.OTP_LIFETIME_MINUTES
+    if reset:
+        subject = _('EduHub — код для сброса пароля')
+        intro = _('Вы запросили сброс пароля на EduHub.')
+    else:
+        subject = _('EduHub — код подтверждения')
+        intro = _('Добро пожаловать в EduHub! Подтвердите свою почту.')
+    code_line = _('Ваш код: %(code)s') % {'code': otp}
+    valid = _('Код действует %(minutes)s минут.') % {'minutes': minutes}
+    warn = _('Никому не сообщайте этот код — даже сотрудникам EduHub. '
+             'Если вы не запрашивали код, просто проигнорируйте это письмо.')
+    text = f"{intro}\n\n{code_line}\n\n{valid}\n{warn}\n\n— EduHub"
+    html = (
+        '<div style="font-family:Arial,Helvetica,sans-serif;max-width:480px;margin:0 auto;padding:24px;'
+        'background:#f4f6fa;color:#14213d">'
+        '<div style="background:#fff;border-radius:14px;padding:28px;border-top:4px solid #f2b705">'
+        f'<h2 style="margin:0 0 8px;color:#1f4fd8">EduHub</h2>'
+        f'<p style="margin:0 0 18px;color:#33415c">{escape(intro)}</p>'
+        f'<p style="margin:0 0 6px;color:#5f6c84;font-size:14px">{escape(_("Ваш код подтверждения"))}</p>'
+        f'<div style="font-size:34px;font-weight:700;letter-spacing:8px;color:#14213d;background:#e8eefd;'
+        f'border-radius:10px;padding:14px 18px;text-align:center">{escape(str(otp))}</div>'
+        f'<p style="margin:18px 0 6px;color:#33415c;font-size:14px">{escape(valid)}</p>'
+        f'<p style="margin:0;color:#c8332b;font-size:13px;font-weight:600">{escape(warn)}</p>'
+        '</div></div>'
+    )
+    return safe_send_mail(subject, text, recipient, html_message=html)
 
 
 # ---------------------------------------------------------------- Башкы бет
@@ -104,11 +138,7 @@ def send_registration_otp(user):
     EmailOTP.objects.update_or_create(user=user, defaults={'otp_code': otp, 'created_at': timezone.now()})
     if settings.DEBUG:
         print(f"[EduHub] OTP for {user.email}: {otp}")
-    return safe_send_mail(
-        _('EduHub - Проверочный код'),
-        _('Ваш код подтверждения: %(code)s') % {'code': otp},
-        user.email,
-    )
+    return send_otp_email(user.email, otp)
 
 
 def register_view(request):
@@ -193,7 +223,7 @@ def _start_reset(request, email):
     request.session['reset_verified'] = False
     if settings.DEBUG:
         print(f"[EduHub] Reset code for {email}: {otp}")
-    return safe_send_mail(_('Код подтверждения'), _('Ваш код: %(code)s') % {'code': otp}, email)
+    return send_otp_email(email, otp, reset=True)
 
 
 def password_reset_form(request):
