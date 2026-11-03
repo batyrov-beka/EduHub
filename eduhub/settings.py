@@ -110,7 +110,8 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = (os.getenv('EMAIL_USER') or '').strip()
 EMAIL_HOST_PASSWORD = (os.getenv('EMAIL_PASS') or '').replace(' ', '')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or 'EduHub <noreply@eduhub.kg>'
+# Жөнөтүүчүнүн аты: почтада адрестин ордуна "EduHub" деп көрүнөт
+DEFAULT_FROM_EMAIL = f'EduHub <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'EduHub <noreply@eduhub.kg>'
 
 # Почта жөндөлбөсө (EMAIL_PASS жок), каттар консолго чыгат — локалдык иштөө үчүн ыңгайлуу.
 if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
