@@ -123,8 +123,8 @@ else:
 SITE_URL = os.getenv('SITE_URL', 'https://baiysh.pythonanywhere.com')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-# Каналга жазылуу шилтемеси (мис.: https://t.me/eduhub_jobs). Бош болсо баскыч көрүнбөйт
-TELEGRAM_CHANNEL_URL = os.getenv('TELEGRAM_CHANNEL_URL', '').strip()
+# Каналга жазылуу шилтемеси (мис.: https://t.me/eduhub_jobs). Бош калтырсаңыз (TELEGRAM_CHANNEL_URL=) баскыч көрүнбөйт
+TELEGRAM_CHANNEL_URL = os.getenv('TELEGRAM_CHANNEL_URL', 'https://t.me/eduhub_kg_jobs').strip()
 
 # OTP кодунун жарактуу мөөнөтү (мүнөт)
 OTP_LIFETIME_MINUTES = 10
