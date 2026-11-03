@@ -1,4 +1,3 @@
-"""Админкага EduHub брендин жана башкы бетке статистика карточкаларын кошот."""
 from django.contrib import admin
 from django.urls import reverse
 
@@ -36,7 +35,7 @@ def setup():
         extra_context = dict(extra_context or {})
         try:
             extra_context['eduhub_stats'] = _stats()
-        except Exception:  # статистика кыйрабасын — админка дайыма ачылсын
+        except Exception:
             extra_context['eduhub_stats'] = []
         return original_index(request, extra_context)
 

@@ -59,11 +59,6 @@ class Resume(models.Model):
         verbose_name_plural = "Резюме"
 
 
-
-
-
-
-
 STATUS_CHOICES = (
     ('pending', _('На рассмотрении')),
     ('accepted', _('Принят')),
@@ -92,7 +87,6 @@ class Application(models.Model):
 
 
 class Notification(models.Model):
-    """Эски модель (колдонулбайт). Билдирүүлөр Dashboard.Notification аркылуу иштейт."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
     is_read = models.BooleanField(default=False)

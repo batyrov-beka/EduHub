@@ -1,11 +1,3 @@
-"""
-Коргоо үчүн демо-маалыматтарды түзүү.
-
-    python manage.py seed_demo            # демо колдонуучулар, вакансиялар, арыздар кошот
-    python manage.py seed_demo --reset    # мурунку бардык вакансия/арыз/форумду өчүрүп, кайра толтурат
-
-Бардык демо аккаунттардын сырсөзү: demo12345
-"""
 import random
 from datetime import timedelta
 

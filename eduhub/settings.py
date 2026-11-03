@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).resolve().parent.parent / '.env', override=True)
 
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -110,23 +109,18 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = (os.getenv('EMAIL_USER') or '').strip()
 EMAIL_HOST_PASSWORD = (os.getenv('EMAIL_PASS') or '').replace(' ', '')
-# Жөнөтүүчүнүн аты: почтада адрестин ордуна "EduHub" деп көрүнөт
 DEFAULT_FROM_EMAIL = f'EduHub <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'EduHub <noreply@eduhub.kg>'
 
-# Почта жөндөлбөсө (EMAIL_PASS жок), каттар консолго чыгат — локалдык иштөө үчүн ыңгайлуу.
 if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Сайттын дареги (каттардагы шилтемелер үчүн)
 SITE_URL = os.getenv('SITE_URL', 'https://baiysh.pythonanywhere.com')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-# Каналга жазылуу шилтемеси (мис.: https://t.me/eduhub_jobs). Бош калтырсаңыз (TELEGRAM_CHANNEL_URL=) баскыч көрүнбөйт
 TELEGRAM_CHANNEL_URL = os.getenv('TELEGRAM_CHANNEL_URL', 'https://t.me/eduhub_kg_jobs').strip()
 
-# OTP кодунун жарактуу мөөнөтү (мүнөт)
 OTP_LIFETIME_MINUTES = 10
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

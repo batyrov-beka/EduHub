@@ -7,7 +7,6 @@ from django.utils.translation import gettext as _
 
 
 def role_required(role):
-    """Бетке белгилүү ролдогу колдонуучу гана кире алат (student / employer)."""
     def decorator(view_func):
         @wraps(view_func)
         @login_required

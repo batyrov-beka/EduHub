@@ -246,12 +246,10 @@
         setTimeout(remove, 5000);
     });
 
-    // Өчүрүү сыяктуу аракеттерди ырастоо
     document.querySelectorAll('form[data-confirm]').forEach((f) => {
         f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
     });
 
-    // Сырсөздү көрсөтүү/жашыруу
     document.querySelectorAll('[data-toggle-password]').forEach((b) => {
         b.addEventListener('click', () => {
             const input = document.getElementById(b.dataset.togglePassword);

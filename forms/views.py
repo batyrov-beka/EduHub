@@ -22,8 +22,6 @@ def absolute(path):
     return settings.SITE_URL.rstrip('/') + path
 
 
-# ---------------------------------------------------------------- Резюме
-
 @student_required
 def my_resume(request):
     resume = Resume.objects.filter(user=request.user).first()
@@ -37,7 +35,7 @@ def my_resume(request):
             return redirect(request.GET.get('next') or 'view_resume')
     else:
         initial = {}
-        if resume is None:  # Профилден автоматтык толтуруу
+        if resume is None:
             initial = {
                 'full_name': request.user.get_full_name(),
                 'phone': request.user.phone,
@@ -57,7 +55,6 @@ def view_resume(request):
 
 @login_required
 def view_student_resume(request, resume_id):
-    """Резюмени ээси, ага арыз алган иш берүүчү же админ гана көрө алат."""
     resume = get_object_or_404(Resume, id=resume_id)
     user = request.user
     allowed = (
@@ -78,8 +75,6 @@ def view_student_resume(request, resume_id):
         'applications': applications,
     })
 
-
-# ---------------------------------------------------------------- Вакансия жана арыз берүү
 
 def vacancy_detail(request, id):
     vacancy = get_object_or_404(Job.objects.select_related('posted_by'), id=id)
@@ -159,8 +154,6 @@ def withdraw_application(request, pk):
     return redirect('student_applications')
 
 
-# ---------------------------------------------------------------- Иш берүүчү: арыздарды кароо
-
 @require_POST
 @employer_required
 def update_status(request, pk, status):
@@ -230,14 +223,11 @@ def employer_dashboard(request):
     })
 
 
-# ---------------------------------------------------------------- Студенттин кабинети
-
 @student_required
 def student_applications(request):
     applications = Application.objects.filter(student=request.user).select_related('vacancy').order_by('-created_at')
     resume = Resume.objects.filter(user=request.user).first()
 
-    # Резюмедеги көндүмдөргө жараша сунушталган вакансиялар
     recommended = Job.objects.filter(is_active=True).exclude(applications__student=request.user)
     if resume and resume.skills_list:
         query = Q()

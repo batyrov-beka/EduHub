@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 def filter_jobs(queryset, data):
-    """Издөө жана чыпкалоо логикасы (вакансиялар тизмеси үчүн)."""
     form = JobFilterForm(data)
     if not form.is_valid():
         return queryset, form
@@ -71,8 +70,6 @@ def vacancy_list(request):
     return render(request, 'jobs/job_list.html', context)
 
 
-# ---------------------------------------------------------------- Иш берүүчүнүн кабинети
-
 def profile_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -117,7 +114,7 @@ def post_job(request):
     else:
         initial = {}
         last_job = Job.objects.filter(posted_by=request.user).order_by('-created_at').first()
-        if last_job:  # Мурунку вакансиядан компания жана телефонду автоматтык толтуруу
+        if last_job:
             initial = {'company': last_job.company, 'phone': last_job.phone, 'location': last_job.location}
         form = JobForm(initial=initial)
 
@@ -160,7 +157,6 @@ def reopen_vacancy(request, pk):
 
 @require_POST
 def delete_job(request, pk):
-    """Вакансияны ээси же администратор гана өчүрө алат."""
     if not request.user.is_authenticated:
         return redirect('login')
     job = get_object_or_404(Job, pk=pk)

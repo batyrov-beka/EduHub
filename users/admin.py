@@ -6,7 +6,6 @@ from .models import CustomUser
 
 
 def titled(base, title):
-    """Чыпка (filter) аталышын кыргызча кылуу."""
     class Titled(base):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)

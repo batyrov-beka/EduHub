@@ -24,5 +24,4 @@ class Notification(models.Model):
 
 
 def notify(user, message, link=''):
-    """Колдонуучуга сайттын ичиндеги билдирүү түзүү."""
     return Notification.objects.create(user=user, message=str(message), link=link)

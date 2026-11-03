@@ -2,9 +2,7 @@ from django.shortcuts import render
 
 
 class VerificationMiddleware:
-    """Админ текшере элек иш берүүчү сайттын ички бөлүмдөрүнө кире албайт."""
 
-    # URL'дерде тил префикси бар (/ru/..., /ky/...), ошондуктан бөлүгү боюнча текшеребиз
     ALLOWED_PARTS = ('/admin/', '/static/', '/media/', '/i18n/', '/logout/', '/waiting-approval/')
 
     def __init__(self, get_response):

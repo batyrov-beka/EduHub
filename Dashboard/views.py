@@ -22,8 +22,6 @@ User = get_user_model()
 superuser_required = user_passes_test(lambda u: u.is_active and u.is_superuser, login_url='login')
 
 
-# ---------------------------------------------------------------- Админ панели
-
 @superuser_required
 def admin_control(request):
     students = User.objects.filter(role='student').order_by('-date_joined')
@@ -31,7 +29,6 @@ def admin_control(request):
     jobs = Job.objects.select_related('posted_by').annotate(app_count=Count('applications'))
     applications = Application.objects.all()
 
-    # Акыркы 14 күндөгү активдүүлүк (диаграмма үчүн)
     since = timezone.now() - timedelta(days=13)
     daily = {
         row['day']: row['total']
@@ -141,15 +138,12 @@ def send_broadcast(request):
     return redirect('admin_control')
 
 
-# ---------------------------------------------------------------- Отчеттор (Excel/CSV)
-
 @superuser_required
 def export_csv(request, kind):
-    """Маалыматтарды Excel'де ачылуучу CSV файлга экспорттоо."""
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     filename = f"eduhub_{kind}_{timezone.localdate():%Y-%m-%d}.csv"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response.write('﻿')  # BOM — Excel кириллицаны туура көрсөтүшү үчүн
+    response.write('﻿')
     writer = csv.writer(response, delimiter=';')
 
     if kind == 'students':
@@ -192,13 +186,10 @@ def export_csv(request, kind):
     return response
 
 
-# ---------------------------------------------------------------- Билдирүүлөр
-
 @login_required
 def notifications_view(request):
     items = list(request.user.admin_notifications.all()[:100])
     unread_ids = [n.id for n in items if not n.is_read]
-    # Барак ачылганда бардыгы окулду деп белгиленет (жаңылары баракта бөлүнүп көрүнөт)
     if unread_ids:
         Notification.objects.filter(id__in=unread_ids).update(is_read=True)
     return render(request, 'Dashboard/notifications.html', {

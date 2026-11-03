@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 def generate_otp():
-    """Криптографиялык жактан коопсуз 6 орундуу код."""
     return f"{secrets.randbelow(900000) + 100000}"
 
 
@@ -35,20 +34,18 @@ def otp_expired(created_at):
 
 
 def safe_send_mail(subject, message, recipient, html_message=None):
-    """Кат жөнөтүү. Ката болсо сайт кулабайт, логго жазылат."""
     try:
         email = EmailMultiAlternatives(subject, message, settings.DEFAULT_FROM_EMAIL, [recipient])
         if html_message:
             email.attach_alternative(html_message, 'text/html')
         email.send(fail_silently=False)
         return True
-    except Exception as exc:  # SMTP ката, интернет жок ж.б.
+    except Exception as exc:
         logger.warning("Email error (%s): %s", recipient, exc)
         return False
 
 
 def send_otp_email(recipient, otp, reset=False):
-    """Тастыктоо кодун кооз жана коопсуздук эскертүүсү менен жөнөтүү."""
     minutes = settings.OTP_LIFETIME_MINUTES
     if reset:
         subject = _('EduHub — код для сброса пароля')
@@ -77,8 +74,6 @@ def send_otp_email(recipient, otp, reset=False):
     return safe_send_mail(subject, text, recipient, html_message=html)
 
 
-# ---------------------------------------------------------------- Башкы бет
-
 def home(request):
     active_jobs = Job.objects.filter(is_active=True)
     context = {
@@ -99,8 +94,6 @@ def home(request):
     return render(request, 'home.html', context)
 
 
-# ---------------------------------------------------------------- Кирүү
-
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -109,7 +102,6 @@ def login_view(request):
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
 
-        # Email менен да кирүүгө болот
         if '@' in username:
             found = User.objects.filter(email__iexact=username).first()
             if found:
@@ -130,8 +122,6 @@ def login_view(request):
 
     return render(request, 'registration/login.html')
 
-
-# ---------------------------------------------------------------- Каттоо
 
 def send_registration_otp(user):
     otp = generate_otp()
@@ -183,7 +173,6 @@ def verify_otp(request):
             messages.error(request, _("Неверный код!"))
         else:
             user.is_active = True
-            # Студент дароо активдешет, иш берүүчүнү админ текшерет
             user.is_verified = user.role == 'student'
             user.save()
             user_otp.delete()
@@ -212,8 +201,6 @@ def resend_registration_otp(request):
         messages.error(request, _("Не удалось отправить письмо. Попробуйте позже."))
     return redirect('verify_otp')
 
-
-# ---------------------------------------------------------------- Сырсөздү калыбына келтирүү
 
 def _start_reset(request, email):
     otp = generate_otp()
@@ -300,8 +287,6 @@ def password_reset_new(request):
 
     return render(request, 'password/password_reset_new.html')
 
-
-# ---------------------------------------------------------------- Профиль жөндөөлөрү
 
 @login_required
 def account_settings(request):

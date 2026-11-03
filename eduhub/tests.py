@@ -1,7 +1,3 @@
-"""
-EduHub — автоматтык тесттер.
-Иштетүү:  python manage.py test eduhub
-"""
 from django.core import mail
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -57,7 +53,7 @@ class RegistrationTests(BaseTestCase):
         code = EmailOTP.objects.get(user=user).otp_code
         self.client.post(reverse('verify_otp'), {'otp': '000000' if code != '000000' else '111111'})
         user.refresh_from_db()
-        self.assertFalse(user.is_active)  # туура эмес код
+        self.assertFalse(user.is_active)
 
         self.client.post(reverse('verify_otp'), {'otp': code})
         user.refresh_from_db()
@@ -178,7 +174,7 @@ class ApplicationTests(BaseTestCase):
         self.login(self.other_employer)
         self.assertRedirects(self.client.get(url), reverse('home'))
         self.apply()
-        self.login(self.employer)  # арыз алган иш берүүчү көрө алат
+        self.login(self.employer)
         self.assertContains(self.client.get(url), 'Айбек Токтогулов')
 
 

@@ -6,7 +6,6 @@ register = template.Library()
 
 @register.filter
 def color_index(value):
-    """Компаниянын атына жараша туруктуу түс (логотип плиткасы үчүн)."""
     return sum(ord(c) for c in str(value)) % 6
 
 
@@ -22,7 +21,6 @@ def initials(value):
 
 @register.filter
 def money(value):
-    """30000 -> «30 000 сом», бош болсо «Договорная»."""
     if value in (None, ''):
         return _("Договорная")
     try:
@@ -47,7 +45,6 @@ def active(context, *prefixes):
 
 @register.filter
 def ago(value):
-    """«3 дня назад» — бир гана бирдик менен (timesince'тин кыскасы)."""
     from django.utils.timesince import timesince
     if not value:
         return ''

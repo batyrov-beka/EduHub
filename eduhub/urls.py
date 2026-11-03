@@ -24,7 +24,6 @@ urlpatterns += i18n_patterns(
     prefix_default_language=True,
 )
 
-# Жүктөлгөн файлдар (сүрөттөр) — PythonAnywhere'де да иштеши үчүн дайыма берилет
 urlpatterns += [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
